@@ -21,11 +21,19 @@ type MediaHandler struct {
 
 // NewMediaHandler creates a new media handler
 func NewMediaHandler(db *gorm.DB) *MediaHandler {
-	// Ensure upload directory exists
-	uploadDir := "./uploads"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		_ = os.MkdirAll(uploadDir, 0755)
+	// Allow configuring upload directory via environment variable.
+	// In containers, prefer an absolute path like /app/uploads.
+	uploadDir := os.Getenv("UPLOAD_DIR")
+	if uploadDir == "" {
+		uploadDir = "./uploads"
 	}
+
+	// Ensure upload directory exists (fail loudly if it cannot be created)
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		fmt.Printf("ERROR: failed to create upload directory %q: %v\n", uploadDir, err)
+	}
+
+	fmt.Printf("Media uploads directory: %s\n", uploadDir)
 
 	return &MediaHandler{
 		db:        db,

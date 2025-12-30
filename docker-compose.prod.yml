@@ -32,6 +32,7 @@ services:
             DB_DSN: "host=postgres user=${POSTGRES_USER:-postgres} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB:-smanzy_db} port=5432 sslmode=disable"
             JWT_SECRET: "${JWT_SECRET}"
             SERVER_PORT: "8080"
+            UPLOAD_DIR: "/app/uploads"
         restart: unless-stopped
         depends_on:
             postgres:
