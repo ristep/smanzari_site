@@ -1,0 +1,154 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+// Grid variant only
+.card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-background-secondary);
+    border: 1px solid var(--color-card-border);
+    border-radius: $radius-lg;
+    overflow: hidden;
+    transition: all $transition-fast;
+    height: 100%;
+
+    &:hover {
+        border-color: rgba(59, 130, 246, 0.5);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+}
+
+.cardThumbnail {
+    width: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background-color: var(--color-background-primary);
+}
+
+.largeThumbWrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-background-primary);
+    position: relative;
+
+    &.clickable {
+        cursor: pointer;
+        transition: transform $transition-fast;
+
+        &:hover {
+            transform: scale(1.05);
+
+            img {
+                transform: scale(1.05);
+            }
+        }
+    }
+}
+
+.largeThumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform $transition-fast;
+}
+
+.largeThumbPlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--color-text-secondary);
+}
+
+.largeThumbOverlay {
+    position: absolute;
+    bottom: $spacing-3;
+    right: $spacing-3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: $radius-md;
+    background-color: rgba(0, 0, 0, 0.35);
+    color: white;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cardContent {
+    padding: $spacing-4;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-3;
+    flex-grow: 1;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-2;
+}
+
+.cardTitle {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    word-break: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    flex-grow: 1;
+}
+
+.cardBadge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: $radius-md;
+    background-color: var(--color-background-primary);
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+.cardMeta {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2;
+    font-size: 0.8rem;
+}
+
+.metaItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.metaLabel {
+    color: var(--color-text-secondary);
+    font-weight: 500;
+}
+
+.metaValue {
+    color: var(--color-text-primary);
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cardActions {
+    display: flex;
+    gap: $spacing-2;
+    justify-content: flex-end;
+}

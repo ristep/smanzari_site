@@ -1,0 +1,64 @@
+name: Rollback Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_tag:
+        description: 'Backup tag to rollback to (e.g., backup-20251230-030626)'
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Validate input
+        run: |
+          if [[ ! "${{ inputs.backup_tag }}" =~ ^backup-[0-9]{8}-[0-9]{6}$ ]]; then
+            echo "❌ Invalid backup tag format. Expected: backup-YYYYMMDD-HHMMSS"
+            exit 1
+          fi
+          echo "Rolling back to: ${{ inputs.backup_tag }}"
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rollback on server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << ENDSSH
+            set -e
+
+            echo "=== Rollback Started ==="
+            cd /home/ristepan/smanzari_site
+
+            # Run rollback
+            echo "Rolling back to ${{ inputs.backup_tag }}..."
+            ./scripts/rollback.sh ${{ inputs.backup_tag }}
+
+            # Health check
+            echo "Verifying health..."
+            sleep 10
+            ./scripts/health-check.sh
+
+            echo "=== Rollback Complete ==="
+          ENDSSH
+
+      - name: Rollback Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Rollback successful!"
+          else
+            echo "❌ Rollback failed! Manual intervention required."
+            exit 1
+          fi

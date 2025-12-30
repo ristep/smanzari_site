@@ -1,0 +1,68 @@
+@layer base {
+
+    /* Light Theme - Default */
+    :root {
+        --color-background: #fdfcfd;
+        --color-background-secondary: #f8f7f9;
+        --color-background-tertiary: #f0eef2;
+        --color-text-primary: #2d1b4e;
+        --color-text-secondary: #5a4a6f;
+        --color-text-muted: #8b7fa3;
+        --color-border: #e8e4ef;
+        --color-border-hover: #d4cde3;
+        --color-accent: #06b6d4;
+        --color-accent-hover: #0891b2;
+        --color-accent-foreground: #ffffff;
+        --color-card: #ffffff;
+        --color-card-border: #e8e4ef;
+        --color-input: #ffffff;
+        --color-input-border: #d4cde3;
+        --color-scrollbar-track: #f8f7f9;
+        --color-scrollbar-thumb: #d4cde3;
+        --color-scrollbar-thumb-hover: #b8adc9;
+    }
+
+    /* Dark Theme */
+    [data-theme="dark"] {
+        --color-background: #1a0f2e;
+        --color-background-secondary: #2d1b4e;
+        --color-background-tertiary: #3f2d5f;
+        --color-text-primary: #f5f3ff;
+        --color-text-secondary: #d8d4e8;
+        --color-text-muted: #b8adc9;
+        --color-border: #3f2d5f;
+        --color-border-hover: #5a4a6f;
+        --color-accent: #22d3ee;
+        --color-accent-hover: #67e8f9;
+        --color-accent-foreground: #1a0f2e;
+        --color-card: #2d1b4e;
+        --color-card-border: #3f2d5f;
+        --color-input: #2d1b4e;
+        --color-input-border: #5a4a6f;
+        --color-scrollbar-track: #1a0f2e;
+        --color-scrollbar-thumb: #3f2d5f;
+        --color-scrollbar-thumb-hover: #5a4a6f;
+    }
+
+    /* Coffee Theme */
+    [data-theme="coffee"] {
+        --color-background: #4d2909;
+        --color-background-secondary: #2c1810;
+        --color-background-tertiary: #3e2723;
+        --color-text-primary: #f5e6d3;
+        --color-text-secondary: #7a6e5f;
+        --color-text-muted: #a1887f;
+        --color-border: #3e2723;
+        --color-border-hover: #5d4037;
+        --color-accent: #d4a574;
+        --color-accent-hover: #e6b887;
+        --color-accent-foreground: #1a120b;
+        --color-card: #2c1810;
+        --color-card-border: #3e2723;
+        --color-input: #2c1810;
+        --color-input-border: #5d4037;
+        --color-scrollbar-track: #1a120b;
+        --color-scrollbar-thumb: #3e2723;
+        --color-scrollbar-thumb-hover: #5d4037;
+    }
+}

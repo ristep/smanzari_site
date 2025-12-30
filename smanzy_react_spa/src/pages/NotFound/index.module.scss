@@ -1,0 +1,39 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.container {
+    text-align: center;
+    padding: $spacing-20 0;
+}
+
+.errorCode {
+    font-size: 3.75rem; // text-6xl
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: $spacing-4;
+}
+
+.message {
+    font-size: 1.25rem; // text-xl
+    color: var(--color-text-secondary);
+    margin-bottom: $spacing-8;
+}
+
+.link {
+    color: #3b82f6;
+    text-decoration: underline;
+    font-weight: 500;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: #1d4ed8;
+    }
+
+    [data-theme="dark"] & {
+        color: #60a5fa;
+
+        &:hover {
+            color: #93c5fd;
+        }
+    }
+}

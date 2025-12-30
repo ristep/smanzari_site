@@ -1,0 +1,83 @@
+.home {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: rgba(50, 50, 50, 0.1);
+    color: #ffffff;
+    text-align: center;
+}
+
+.header {
+    // background: linear-gradient(to bottom, #000000, #1f1f1f);
+    padding: 60px 20px;
+}
+
+.logo {
+    font-size: 48px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #ff0000;
+}
+
+.channelName {
+    font-size: 36px;
+    margin: 10px 0;
+}
+
+.description {
+    font-size: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+    line-height: 1.5;
+}
+
+.subscribeBtn {
+    display: inline-block;
+    margin: 30px 0;
+    padding: 15px 30px;
+    background-color: rgba(50, 50, 50, 0.1);
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: rgba(50, 50, 50, 0.1);
+    }
+}
+
+.videosSection {
+    padding: 40px 20px;
+    background-color: rgba(50, 50, 50, 0.1);
+
+    h2 {
+        margin-bottom: 30px;
+        font-size: 32px;
+    }
+
+    a {
+        color: #ff0000;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.videosGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+.loading {
+    color: #ff0000;
+    font-style: italic;
+    grid-column: 1 / -1;
+}

@@ -1,0 +1,47 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.toggle {
+    padding: $spacing-2;
+    border-radius: $radius-lg;
+    transition: all $transition-fast;
+    cursor: pointer;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-primary);
+
+    &:hover {
+        background-color: rgba(30, 41, 59, 0.5); // slate-800/50 approx
+
+        [data-theme="light"] & {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+    }
+}
+
+.iconWrapper {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.icon {
+    position: absolute;
+    inset: 0;
+    transition: all $transition-base;
+    opacity: 0;
+    transform: scale(0) rotate(90deg);
+
+    &.visible {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+
+    &.hidden {
+        opacity: 0;
+        transform: scale(0) rotate(-90deg);
+    }
+}

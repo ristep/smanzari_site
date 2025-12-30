@@ -1,0 +1,39 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.container {
+    max-width: 65ch; // approx prose width
+    margin: 0 auto;
+    padding: $spacing-10 $spacing-4;
+}
+
+.title {
+    font-size: 1.875rem; // text-3xl
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin-bottom: $spacing-6;
+}
+
+.content {
+    color: var(--color-text-secondary);
+    line-height: 1.625;
+
+    p {
+        margin-bottom: $spacing-4;
+    }
+
+    strong {
+        color: var(--color-text-primary);
+        font-weight: 600;
+    }
+}
+
+.list {
+    list-style-type: disc;
+    padding-left: $spacing-5;
+    margin-top: $spacing-4;
+
+    li {
+        margin-bottom: $spacing-2;
+    }
+}

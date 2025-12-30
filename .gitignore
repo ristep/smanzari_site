@@ -1,0 +1,65 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Docker volumes and data
+postgres_data/
+pgadmin_data/
+uploads_data/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Backend - Go
+smanzy_backend/vendor/
+smanzy_backend/tmp/
+smanzy_backend/*.exe
+smanzy_backend/*.exe~
+smanzy_backend/*.dll
+smanzy_backend/*.so
+smanzy_backend/*.dylib
+smanzy_backend/*.test
+smanzy_backend/*.out
+smanzy_backend/go.work
+smanzy_backend/.air.toml
+smanzy_backend/server
+
+# Frontend - React/Vite
+smanzy_react_spa/node_modules/
+smanzy_react_spa/dist/
+smanzy_react_spa/dist-ssr/
+smanzy_react_spa/.yarn/cache
+smanzy_react_spa/.yarn/install-state.gz
+smanzy_react_spa/.pnp.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# SSH keys (if accidentally copied here)
+*.pem
+*.key
+id_rsa*
+
+# Backup files
+*.bak
+*.backup

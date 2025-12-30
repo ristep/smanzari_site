@@ -1,0 +1,103 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 500;
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    transition: all $transition-fast;
+    cursor: pointer;
+    border: 1px solid transparent;
+    -webkit-user-select: none;
+    user-select: none;
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--color-background), 0 0 0 4px var(--color-accent);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // Sizes
+    &.sm {
+        padding: $spacing-1 $spacing-3;
+        font-size: 0.75rem;
+    }
+
+    &.md {
+        padding: $spacing-2 $spacing-4;
+        font-size: 0.875rem;
+    }
+
+    &.lg {
+        padding: $spacing-3 $spacing-6;
+        font-size: 1rem;
+    }
+
+    // Variants
+    &.primary {
+        background-color: #4f46e5; // indigo-600 approx
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #4338ca;
+        }
+    }
+
+    &.secondary {
+        background-color: var(--color-background);
+        border-color: var(--color-border);
+        color: var(--color-text-secondary);
+
+        &:hover:not(:disabled) {
+            background-color: var(--color-background-secondary);
+        }
+    }
+
+    &.danger {
+        background-color: #dc2626; // red-600
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #b91c1c;
+        }
+    }
+
+    &.outline {
+        background-color: transparent;
+        border-color: #4f46e5;
+        color: #4f46e5;
+
+        &:hover:not(:disabled) {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+    }
+
+    &.register,
+    &.login {
+        width: 100%;
+        background: linear-gradient(to right, #059669, #0d9488); // emerald-600 to teal-600
+        padding: $spacing-3 $spacing-4;
+        border-radius: $radius-xl;
+        font-size: 1.125rem;
+        color: white;
+        box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.25);
+        border: none;
+        justify-content: center;
+
+        &:hover:not(:disabled) {
+            background: linear-gradient(to right, #10b981, #14b8a6);
+            transform: scale(1.02);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+        }
+
+        &:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+    }
+}

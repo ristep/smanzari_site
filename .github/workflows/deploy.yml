@@ -1,0 +1,75 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_build:
+        description: 'Skip Docker build (use existing images)'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  DEPLOY_PATH: /home/ristepan/smanzari_site
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'ENDSSH'
+            set -e
+
+            echo "=== Deployment Started ==="
+            cd /home/ristepan/smanzari_site
+
+            # Pull latest code
+            echo "[1/4] Pulling latest code..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Make scripts executable
+            chmod +x scripts/*.sh
+
+            # Run deployment
+            echo "[2/4] Running deployment..."
+            ./scripts/deploy.sh
+
+            # Final health check
+            echo "[3/4] Final health verification..."
+            sleep 10
+            ./scripts/health-check.sh
+
+            echo "[4/4] Deployment complete!"
+          ENDSSH
+
+      - name: Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+          else
+            echo "❌ Deployment failed!"
+            echo "Run rollback workflow if needed."
+            exit 1
+          fi

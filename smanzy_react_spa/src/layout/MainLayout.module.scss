@@ -1,0 +1,14 @@
+@use '../styles/abstracts/variables' as *;
+@use '../styles/abstracts/mixins' as *;
+
+.layout {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main {
+    flex-grow: 1;
+    width: 100%;
+    padding-top: $spacing-16; // 4rem / 64px to offset fixed navbar
+}

@@ -1,0 +1,117 @@
+version: "3.8"
+
+services:
+    postgres:
+        image: postgres:16-alpine
+        container_name: smanzy_postgres
+        env_file:
+            - .env
+        environment:
+            POSTGRES_USER: "${POSTGRES_USER:-postgres}"
+            POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+            POSTGRES_DB: "${POSTGRES_DB:-smanzy_db}"
+        restart: unless-stopped
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - smanzy_network
+
+    backend:
+        build:
+            context: ./smanzy_backend
+            dockerfile: Dockerfile
+        container_name: smanzy_backend
+        env_file:
+            - .env
+        environment:
+            DB_DSN: "host=postgres user=${POSTGRES_USER:-postgres} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB:-smanzy_db} port=5432 sslmode=disable"
+            JWT_SECRET: "${JWT_SECRET}"
+            SERVER_PORT: "8080"
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        volumes:
+            - uploads_data:/app/uploads
+        ports:
+            - "127.0.0.1:8080:8080"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "wget",
+                    "--no-verbose",
+                    "--tries=1",
+                    "--spider",
+                    "http://localhost:8080/health",
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - smanzy_network
+
+    frontend:
+        build:
+            context: ./smanzy_react_spa
+            dockerfile: Dockerfile
+        container_name: smanzy_frontend
+        restart: unless-stopped
+        depends_on:
+            backend:
+                condition: service_healthy
+        ports:
+            - "127.0.0.1:3000:80"
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "wget",
+                    "--no-verbose",
+                    "--tries=1",
+                    "--spider",
+                    "http://localhost:80/health",
+                ]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 10s
+        networks:
+            - smanzy_network
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: smanzy_pgadmin
+        environment:
+            PGADMIN_DEFAULT_EMAIL: "ristep@gmail.com"
+            PGADMIN_DEFAULT_PASSWORD: "U6EtCgOik+LuHbDvWLzHQw=="
+            PGADMIN_CONFIG_SERVER_MODE: "True"
+            PGADMIN_CONFIG_CHECK_EMAIL_DELIVERABILITY: "False"
+        restart: unless-stopped
+        depends_on:
+            postgres:
+                condition: service_healthy
+        ports:
+            - "127.0.0.1:5050:80"
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        networks:
+            - smanzy_network
+
+volumes:
+    postgres_data:
+        driver: local
+    uploads_data:
+        driver: local
+    pgadmin_data:
+        driver: local
+
+networks:
+    smanzy_network:
+        driver: bridge

@@ -1,0 +1,64 @@
+@use 'variables' as *;
+
+// Media Queries
+@mixin mobile {
+    @media (max-width: #{$breakpoint-md - 1px}) {
+        @content;
+    }
+}
+
+@mixin tablet {
+    @media (min-width: #{$breakpoint-md}) and (max-width: #{$breakpoint-lg - 1px}) {
+        @content;
+    }
+}
+
+@mixin desktop {
+    @media (min-width: #{$breakpoint-lg}) {
+        @content;
+    }
+}
+
+@mixin breakpoint($width) {
+    @media (min-width: #{$width}) {
+        @content;
+    }
+}
+
+// Flex Helpers
+@mixin flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@mixin flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@mixin flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+// Grid Helpers
+@mixin grid-cols($cols) {
+    display: grid;
+    grid-template-columns: repeat($cols, minmax(0, 1fr));
+}
+
+// Interactive
+@mixin hover-lift {
+    transition: transform $transition-fast, box-shadow $transition-fast;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+}
+
+// Theme Transition
+@mixin theme-transition {
+    transition: background-color $transition-base, color $transition-base, border-color $transition-base, box-shadow $transition-base;
+}
