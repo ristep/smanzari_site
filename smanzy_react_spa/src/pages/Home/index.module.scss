@@ -5,7 +5,7 @@
 	margin: 0;
 	padding: 0;
 	font-family: "Inter", "Segoe UI", sans-serif;
-	background: var(--gradient-primary);
+	/* background: var(--gradient-primary); */
 	color: var(--color-text-primary);
 	text-align: center;
 	min-height: 100vh;
@@ -45,19 +45,19 @@
 }
 
 .header {
-	padding: 80px 20px 60px;
+	padding: 56px 14px 42px;
 	position: relative;
 	z-index: 1;
-	background: var(--gradient-card);
+	/* background: var(--gradient-card); */
 	backdrop-filter: blur(20px);
 	border-bottom: 1px solid var(--color-border);
 	box-shadow: 0 4px 30px rgba(200, 150, 180, 0.1);
 }
 
 .logo {
-	font-size: 56px;
+	font-size: 39px;
 	font-weight: 800;
-	margin-bottom: 16px;
+	margin-bottom: 11px;
 	background: linear-gradient(
 		135deg,
 		var(--color-highlight) 0%,
@@ -72,32 +72,32 @@
 }
 
 .channelName {
-	font-size: 32px;
+	font-size: 22px;
 	font-weight: 600;
-	margin: 16px 0;
+	margin: 11px 0;
 	color: var(--color-text-primary);
 	letter-spacing: -0.5px;
 }
 
 .description {
-	font-size: 18px;
-	max-width: 700px;
-	margin: 24px auto;
+	font-size: 13px;
+	max-width: 490px;
+	margin: 17px auto;
 	line-height: 1.8;
 	color: var(--color-text-secondary);
 }
 
 .subscribeBtn {
 	display: inline-block;
-	margin: 32px 0;
-	padding: 16px 40px;
+	margin: 22px 0;
+	padding: 11px 28px;
 	background: linear-gradient(
 		135deg,
 		var(--color-accent) 0%,
 		var(--color-highlight) 100%
 	);
 	color: white;
-	font-size: 18px;
+	font-size: 13px;
 	font-weight: 600;
 	text-decoration: none;
 	border-radius: $radius-full;
