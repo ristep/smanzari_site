@@ -1,344 +1,353 @@
-@use '../../styles/abstracts/variables' as *;
-@use '../../styles/abstracts/mixins' as *;
+@use "@/styles/abstracts/variables" as *;
+@use "@/styles/abstracts/mixins" as *;
 
 .container {
-    max-width: $breakpoint-xl;
-    margin: 0 auto;
-    padding: $spacing-8 $spacing-4;
+	max-width: $breakpoint-xl;
+	margin: 0 auto;
+	padding: $spacing-8 $spacing-4;
 
-    @include breakpoint($breakpoint-sm) {
-        padding-left: $spacing-6;
-        padding-right: $spacing-6;
-    }
+	@include breakpoint($breakpoint-sm) {
+		padding-left: $spacing-6;
+		padding-right: $spacing-6;
+	}
 
-    @include breakpoint($breakpoint-lg) {
-        padding-left: $spacing-8;
-        padding-right: $spacing-8;
-    }
+	@include breakpoint($breakpoint-lg) {
+		padding-left: $spacing-8;
+		padding-right: $spacing-8;
+	}
 }
 
 .header {
-    margin-bottom: $spacing-8;
+	margin-bottom: $spacing-8;
 }
 
 .title {
-    font-size: 2.25rem; // text-4xl
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: $spacing-2;
+	font-size: 2.25rem; // text-4xl
+	font-weight: 700;
+	color: var(--color-text-primary);
+	margin-bottom: $spacing-2;
 }
 
 .subtitle {
-    color: var(--color-text-secondary);
+	color: var(--color-text-secondary);
 }
 
 .sectionTitle {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: $spacing-4;
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-text-primary);
+	margin-bottom: $spacing-4;
 }
 
 /* Grid Container */
 .gridContainer {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: $spacing-4;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: $spacing-4;
 
-    @include breakpoint($breakpoint-sm) {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: $spacing-5;
-    }
+	@include breakpoint($breakpoint-sm) {
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: $spacing-5;
+	}
 
-    @include breakpoint($breakpoint-md) {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: $spacing-6;
-    }
+	@include breakpoint($breakpoint-md) {
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: $spacing-6;
+	}
 
-    @include breakpoint($breakpoint-lg) {
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    }
+	@include breakpoint($breakpoint-lg) {
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	}
 }
 
 /* Upload Section */
-.uploadSection {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-4;
-    align-items: flex-start;
+.uploadPanel {
+	margin-top: $spacing-2;
+	margin-bottom: $spacing-6;
+}
 
-    @include breakpoint($breakpoint-sm) {
-        flex-direction: row;
-        align-items: flex-end;
-    }
+.uploadSection {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-4;
+	align-items: flex-start;
+
+	@include breakpoint($breakpoint-sm) {
+		flex-direction: row;
+		align-items: flex-end;
+	}
 }
 
 .fileInputWrapper {
-    flex: 1;
-    width: 100%;
+	flex: 1;
+	width: 100%;
 }
 
 .fileInput {
-    display: block;
-    width: 100%;
-    font-size: 0.875rem;
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-card-border);
-    border-radius: $radius-lg;
-    cursor: pointer;
-    background-color: var(--color-background-secondary);
-    transition: all $transition-fast;
+	display: block;
+	width: 100%;
+	font-size: 0.875rem;
+	color: var(--color-text-primary);
+	border: 1px solid var(--color-card-border);
+	border-radius: $radius-lg;
+	cursor: pointer;
+	background-color: var(--color-background-secondary);
+	transition: all $transition-fast;
 
-    &:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-    }
+	&:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+	}
 
-    &::-webkit-file-upload-button {
-        padding: $spacing-2 $spacing-4;
-        margin-right: $spacing-4;
-        border-radius: $radius-lg 0 0 $radius-lg;
-        border: 0;
-        font-size: 0.875rem;
-        font-weight: 600;
-        background-color: rgba(59, 130, 246, 0.1);
-        color: #3b82f6;
-        cursor: pointer;
-        transition: background-color $transition-fast;
+	&::-webkit-file-upload-button {
+		padding: $spacing-2 $spacing-4;
+		margin-right: $spacing-4;
+		border-radius: $radius-lg 0 0 $radius-lg;
+		border: 0;
+		font-size: 0.875rem;
+		font-weight: 600;
+		background-color: rgba(59, 130, 246, 0.1);
+		color: #3b82f6;
+		cursor: pointer;
+		transition: background-color $transition-fast;
 
-        &:hover {
-            background-color: rgba(59, 130, 246, 0.2);
-        }
-    }
+		&:hover {
+			background-color: rgba(59, 130, 246, 0.2);
+		}
+	}
 }
 
 .progressWrapper {
-    margin-top: $spacing-4;
+	margin-top: $spacing-4;
 }
 
 .progressInfo {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin-bottom: $spacing-1;
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin-bottom: $spacing-1;
 }
 
 .progressBarTrack {
-    width: 100%;
-    background-color: var(--color-background-tertiary);
-    border-radius: $radius-full;
-    height: 0.625rem;
+	width: 100%;
+	background-color: var(--color-background-tertiary);
+	border-radius: $radius-full;
+	height: 0.625rem;
 }
 
 .progressBarFill {
-    background-color: #3b82f6;
-    height: 100%;
-    border-radius: $radius-full;
-    transition: width 0.3s ease;
+	background-color: #3b82f6;
+	height: 100%;
+	border-radius: $radius-full;
+	transition: width 0.3s ease;
 }
 
 /* Table Section */
 .tableHeader {
-    padding: $spacing-4 $spacing-6;
-    background-color: var(--color-background-secondary);
-    border-bottom: 1px solid var(--color-card-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	margin-bottom: $spacing-4;
+	padding: $spacing-4 $spacing-6;
+	background-color: var(--color-background-secondary);
+	border: 1px solid var(--color-card-border);
+	border-radius: $radius-lg;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
 .tableInfo {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-    margin-top: $spacing-1;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin-top: $spacing-1;
 }
 
 .emptyState {
-    text-align: center;
-    padding: $spacing-12 0;
+	text-align: center;
+	padding: $spacing-12 0;
 }
 
 .emptyIcon {
-    font-size: 3.75rem;
-    margin-bottom: $spacing-4;
+	font-size: 3.75rem;
+	margin-bottom: $spacing-4;
 }
 
 .emptyText {
-    color: var(--color-text-secondary);
-    font-size: 1.125rem;
+	color: var(--color-text-secondary);
+	font-size: 1.125rem;
 }
 
 .emptySubtext {
-    color: var(--color-text-muted);
-    font-size: 0.875rem;
-    margin-top: $spacing-2;
+	color: var(--color-text-muted);
+	font-size: 0.875rem;
+	margin-top: $spacing-2;
 }
 
 .tableWrapper {
-    overflow-x: auto;
+	overflow-x: auto;
 }
 
 .table {
-    min-width: 100%;
-    border-collapse: collapse;
+	min-width: 100%;
+	border-collapse: collapse;
 }
 
 .thead {
-    background-color: var(--color-background-secondary);
+	background-color: var(--color-background-secondary);
 }
 
 .th {
-    padding: $spacing-3 $spacing-6;
-    text-align: left;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+	padding: $spacing-3 $spacing-6;
+	text-align: left;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 
-    &.right {
-        text-align: right;
-    }
+	&.right {
+		text-align: right;
+	}
 }
 
 .tr {
-    &:hover {
-        background-color: var(--color-background-secondary);
-    }
+	&:hover {
+		background-color: var(--color-background-secondary);
+	}
 
-    transition: background-color $transition-fast;
+	transition: background-color $transition-fast;
 }
 
 .td {
-    padding: $spacing-4 $spacing-6;
-    white-space: nowrap;
-    font-size: 0.875rem;
+	padding: $spacing-4 $spacing-6;
+	white-space: nowrap;
+	font-size: 0.875rem;
 
-    &.right {
-        text-align: right;
-    }
+	&.right {
+		text-align: right;
+	}
 }
 
 .fileName {
-    font-weight: 500;
-    color: var(--color-text-primary);
+	font-weight: 500;
+	color: var(--color-text-primary);
 }
 
 .fileId {
-    font-size: 0.75rem;
-    color: var(--color-text-muted);
+	font-size: 0.75rem;
+	color: var(--color-text-muted);
 }
 
 .typeBadge {
-    display: inline-flex;
-    padding: 0 0.5rem;
-    font-size: 0.75rem;
-    line-height: 1.25rem;
-    font-weight: 600;
-    border-radius: $radius-full;
-    background-color: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+	display: inline-flex;
+	padding: 0 0.5rem;
+	font-size: 0.75rem;
+	line-height: 1.25rem;
+	font-weight: 600;
+	border-radius: $radius-full;
+	background-color: rgba(59, 130, 246, 0.1);
+	color: #3b82f6;
 }
 
 .textSecondary {
-    color: var(--color-text-secondary);
+	color: var(--color-text-secondary);
 }
 
 /* Pagination */
 .pagination {
-    padding: $spacing-4 $spacing-6;
-    background-color: var(--color-background-secondary);
-    border-top: 1px solid var(--color-card-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+	margin-top: $spacing-4;
+	padding: $spacing-4 $spacing-6;
+	background-color: var(--color-background-secondary);
+	border: 1px solid var(--color-card-border);
+	border-radius: $radius-lg;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .paginationInfo {
-    display: none;
+	display: none;
 
-    @include breakpoint($breakpoint-sm) {
-        display: block;
-    }
+	@include breakpoint($breakpoint-sm) {
+		display: block;
+	}
 
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
 
-    span {
-        font-weight: 500;
-    }
+	span {
+		font-weight: 500;
+	}
 }
 
 .paginationControls {
-    display: flex;
-    gap: $spacing-2;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
+	display: flex;
+	gap: $spacing-2;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
 
-    @include breakpoint($breakpoint-sm) {
-        width: auto;
-    }
+	@include breakpoint($breakpoint-sm) {
+		width: auto;
+	}
 }
 
 .pageNumbers {
-    display: flex;
-    gap: $spacing-1;
+	display: flex;
+	gap: $spacing-1;
 }
 
 .dots {
-    padding: $spacing-1 $spacing-3;
-    color: var(--color-text-muted);
+	padding: $spacing-1 $spacing-3;
+	color: var(--color-text-muted);
 }
 
 .loadingSpinner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 60vh;
 }
 
 .spinner {
-    height: 4rem;
-    width: 4rem;
-    border-radius: $radius-full;
-    border-bottom: 2px solid #3b82f6; // accent fallback
-    animation: spin 1s linear infinite;
-    margin: 0 auto $spacing-4;
+	height: 4rem;
+	width: 4rem;
+	border-radius: $radius-full;
+	border-bottom: 2px solid #3b82f6; // accent fallback
+	animation: spin 1s linear infinite;
+	margin: 0 auto $spacing-4;
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+	from {
+		transform: rotate(0deg);
+	}
 
-    to {
-        transform: rotate(360deg);
-    }
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .errorContainer {
-    max-width: $breakpoint-xl;
-    margin: 0 auto;
-    padding: $spacing-8 $spacing-4;
+	max-width: $breakpoint-xl;
+	margin: 0 auto;
+	padding: $spacing-8 $spacing-4;
 }
 
 .errorBox {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: $radius-lg;
-    padding: $spacing-6;
-    text-align: center;
+	background-color: rgba(239, 68, 68, 0.1);
+	border: 1px solid rgba(239, 68, 68, 0.2);
+	border-radius: $radius-lg;
+	padding: $spacing-6;
+	text-align: center;
 }
 
 .errorTitle {
-    color: #f87171;
-    font-weight: 500;
+	color: #f87171;
+	font-weight: 500;
 }
 
 .errorMessage {
-    color: #f87171;
-    font-size: 0.875rem;
-    margin-top: $spacing-2;
+	color: #f87171;
+	font-size: 0.875rem;
+	margin-top: $spacing-2;
 }

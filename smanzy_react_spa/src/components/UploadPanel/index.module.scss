@@ -1,0 +1,96 @@
+@use "@/styles/abstracts/variables" as *;
+@use "@/styles/abstracts/mixins" as *;
+
+.uploadPanel {
+	margin-top: $spacing-2;
+	margin-bottom: $spacing-6;
+}
+
+.sectionTitle {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--color-text-primary);
+	margin-bottom: $spacing-4;
+}
+
+.uploadSection {
+	display: flex;
+	flex-direction: column;
+	gap: $spacing-4;
+	align-items: flex-start;
+
+	@include breakpoint($breakpoint-sm) {
+		flex-direction: row;
+		align-items: flex-end;
+	}
+}
+
+.fileInputWrapper {
+	flex: 1;
+	width: 100%;
+}
+
+.fileInput {
+	display: block;
+	width: 100%;
+	font-size: 0.875rem;
+	color: var(--color-text-primary);
+	border: 1px solid var(--color-card-border);
+	border-radius: $radius-lg;
+	cursor: pointer;
+	background-color: var(--color-background-secondary);
+	transition: all $transition-fast;
+
+	&:focus {
+		outline: none;
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+	}
+
+	&::-webkit-file-upload-button {
+		padding: $spacing-2 $spacing-4;
+		margin-right: $spacing-4;
+		border-radius: $radius-lg 0 0 $radius-lg;
+		border: 0;
+		font-size: 0.875rem;
+		font-weight: 600;
+		background-color: rgba(59, 130, 246, 0.1);
+		color: #3b82f6;
+		cursor: pointer;
+		transition: background-color $transition-fast;
+
+		&:hover {
+			background-color: rgba(59, 130, 246, 0.2);
+		}
+	}
+}
+
+.uploadButton {
+	white-space: nowrap;
+}
+
+.progressWrapper {
+	margin-top: $spacing-4;
+	width: 100%;
+}
+
+.progressInfo {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.875rem;
+	color: var(--color-text-secondary);
+	margin-bottom: $spacing-1;
+}
+
+.progressBarTrack {
+	width: 100%;
+	background-color: var(--color-background-tertiary);
+	border-radius: $radius-full;
+	height: 0.625rem;
+}
+
+.progressBarFill {
+	background-color: #3b82f6;
+	height: 100%;
+	border-radius: $radius-full;
+	transition: width 0.3s ease;
+}
