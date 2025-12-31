@@ -103,7 +103,7 @@ services:
             postgres:
                 condition: service_healthy
         ports:
-            - "127.0.0.1:5050:80"
+            - "127.0.0.1:5051:80"
         volumes:
             # CHANGED: Now points to a local folder
             - ./smanzy_data/pgadmin:/var/lib/pgadmin
