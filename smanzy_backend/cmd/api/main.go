@@ -125,6 +125,10 @@ func main() {
 		// == PUBLIC ROUTES ==
 		// These endpoints can be accessed without logging in
 
+		// Version endpoint - returns API version information
+		versionHandler := handlers.NewVersionHandler()
+		api.GET("/version", versionHandler.GetVersionHandler)
+
 		auth := api.Group("/auth")
 		auth.Use(rateLimitMiddleware) // Apply rate limiting here
 		{
