@@ -191,84 +191,147 @@
 }
 
 .mobileMenu {
+    position: fixed;
+    top: $spacing-16; // Height of navbar
+    left: 0;
+    right: 0;
+    max-height: 0;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background-color: rgba(15, 23, 42, 0.98);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease;
+    opacity: 0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+
     @include breakpoint($breakpoint-md) {
         display: none;
     }
 
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background-color: rgba(15, 23, 42, 0.95);
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    overflow: hidden;
-
     [data-theme="light"] & {
-        background-color: rgba(255, 255, 255, 0.95);
-        border-top-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(255, 255, 255, 0.98);
+        border-top-color: rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    &.mobileMenuOpen {
+        max-height: calc(100vh - $spacing-16);
+        opacity: 1;
+        overflow-y: auto;
     }
 }
 
 .mobileContent {
-    padding: $spacing-4 $spacing-4 $spacing-6;
+    padding: $spacing-6 $spacing-4 $spacing-8;
     display: flex;
     flex-direction: column;
-    gap: $spacing-2;
+    gap: $spacing-1;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .mobileThemeToggle {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: $spacing-2;
-    margin-bottom: $spacing-2;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: $spacing-3 $spacing-4;
+    margin-bottom: $spacing-3;
+    border-radius: $radius-lg;
+    background-color: rgba(255, 255, 255, 0.03);
 
     span {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     [data-theme="light"] & {
-        border-bottom-color: rgba(0, 0, 0, 0.05);
+        background-color: rgba(0, 0, 0, 0.03);
     }
+}
+
+.mobileNavSection {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-1;
+    margin-bottom: $spacing-2;
 }
 
 .mobileLink {
     display: block;
     padding: $spacing-3 $spacing-4;
-    border-radius: $radius-xl;
+    border-radius: $radius-lg;
     font-size: 1rem;
     font-weight: 500;
     color: var(--color-text-secondary);
     transition: all $transition-fast;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(to bottom, #60a5fa, #3b82f6);
+        transform: scaleY(0);
+        transition: transform $transition-fast;
+    }
 
     &:hover {
         color: var(--color-text-primary);
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: rgba(96, 165, 250, 0.08);
+        transform: translateX(4px);
 
         [data-theme="light"] & {
-            background-color: rgba(0, 0, 0, 0.05);
+            background-color: rgba(59, 130, 246, 0.08);
         }
     }
 
     &.active {
-        color: var(--color-text-primary);
-        background-color: rgba(255, 255, 255, 0.1);
+        color: #60a5fa;
+        background-color: rgba(59, 130, 246, 0.12);
+        font-weight: 600;
+
+        &::before {
+            transform: scaleY(1);
+        }
+
+        [data-theme="light"] & {
+            color: #3b82f6;
+        }
     }
 }
 
 .mobileAuth {
     margin-top: $spacing-4;
     padding-top: $spacing-4;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 
     [data-theme="light"] & {
-        border-top-color: rgba(0, 0, 0, 0.05);
+        border-top-color: rgba(0, 0, 0, 0.08);
     }
 }
 
 .mobileAuthGrid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: $spacing-4;
+    gap: $spacing-3;
 }
