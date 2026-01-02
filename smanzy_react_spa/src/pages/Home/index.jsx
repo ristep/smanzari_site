@@ -3,8 +3,10 @@ import VideoCard from "@/components/VideoCard";
 import styles from "./index.module.scss";
 
 // const API_KEY = "AIzaSyDlfkraqNdGhYVVp1VIEhMmfX3VshCJ4Pw";
+// const channelId = "UC5HREoBfSiupqSj1E6buRBQ"
 // fake key
 const API_KEY = "Jibuti"
+
 
 const VIDEO_DATA = [
     {

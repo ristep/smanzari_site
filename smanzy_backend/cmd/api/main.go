@@ -22,6 +22,7 @@ import (
 	"github.com/ristep/smanzy_backend/internal/handlers"
 	"github.com/ristep/smanzy_backend/internal/middleware"
 	"github.com/ristep/smanzy_backend/internal/models"
+	"github.com/ristep/smanzy_backend/internal/services"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	"github.com/ulule/limiter/v3/drivers/store/memory"
@@ -56,6 +57,16 @@ func main() {
 		serverPort = "8080" // Default to 8080 if not specified
 	}
 
+	// YouTube API configuration
+	youtubeAPIKey := os.Getenv("YOUTUBE_API_KEY")
+	youtubeChannelID := os.Getenv("YOUTUBE_CHANNEL_ID")
+	if youtubeAPIKey == "" {
+		log.Println("Warning: YOUTUBE_API_KEY not set, YouTube sync will not work")
+	}
+	if youtubeChannelID == "" {
+		log.Println("Warning: YOUTUBE_CHANNEL_ID not set, YouTube sync will not work")
+	}
+
 	// 3. Database Connection
 	// Connect to PostgreSQL using GORM
 	db, err := gorm.Open(postgres.Open(dbDSN), &gorm.Config{})
@@ -68,7 +79,7 @@ func main() {
 	// the Go structs defined in `internal/models`.
 	// Be careful with this in production!
 	if *migrate {
-		if err := db.AutoMigrate(&models.User{}, &models.Role{}, &models.Media{}, &models.Album{}); err != nil {
+		if err := db.AutoMigrate(&models.User{}, &models.Role{}, &models.Media{}, &models.Album{}, &models.Video{}); err != nil {
 			log.Fatalf("Failed to auto-migrate models: %v", err)
 		}
 	}
@@ -83,11 +94,13 @@ func main() {
 	// 6. Service Initialization
 	// Initialize our services and handlers, injecting dependencies (like the DB connection)
 	jwtService := auth.NewJWTService(jwtSecret)
+	youtubeService := services.NewYouTubeService(youtubeAPIKey, youtubeChannelID)
 
 	authHandler := handlers.NewAuthHandler(db, jwtService)
 	userHandler := handlers.NewUserHandler(db)
 	mediaHandler := handlers.NewMediaHandler(db)
 	albumHandler := handlers.NewAlbumHandler(db)
+	videoHandler := handlers.NewVideoHandler(db, youtubeService)
 
 	// 7. Router Setup
 	// Create a new Gin router with default middleware (logger and recovery)
@@ -139,6 +152,10 @@ func main() {
 
 		// Public media listing
 		api.GET("/media", mediaHandler.ListPublicMediasHandler)
+
+		// Public video endpoints
+		api.GET("/videos", videoHandler.ListVideosHandler)
+		api.GET("/videos/:id", videoHandler.GetVideoHandler)
 
 		// Serve uploaded files directly (for development)
 		// :name is a path parameter that captures the filename
@@ -195,6 +212,13 @@ func main() {
 			// Album media management
 			albums.POST("/:id/media", albumHandler.AddMediaToAlbumHandler)        // Add media to album
 			albums.DELETE("/:id/media", albumHandler.RemoveMediaFromAlbumHandler) // Remove media from album
+		}
+
+		// Video routes (admin only)
+		videos := protectedAPI.Group("/videos")
+		videos.Use(middleware.RoleMiddleware("admin"))
+		{
+			videos.POST("/sync", videoHandler.SyncVideosHandler) // Sync videos from YouTube
 		}
 
 	}
