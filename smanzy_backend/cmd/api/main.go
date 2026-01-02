@@ -214,9 +214,8 @@ func main() {
 			albums.DELETE("/:id/media", albumHandler.RemoveMediaFromAlbumHandler) // Remove media from album
 		}
 
-		// Video routes (admin only)
+		// Video routes (authenticated)
 		videos := protectedAPI.Group("/videos")
-		videos.Use(middleware.RoleMiddleware("admin"))
 		{
 			videos.POST("/sync", videoHandler.SyncVideosHandler) // Sync videos from YouTube
 		}

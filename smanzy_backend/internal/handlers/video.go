@@ -97,7 +97,7 @@ func (h *VideoHandler) GetVideoHandler(c *gin.Context) {
 
 // SyncVideosHandler fetches videos from YouTube and updates the database
 // @Summary Sync videos from YouTube
-// @Description Fetch latest videos from YouTube channel and update database (Admin only)
+// @Description Fetch latest videos from YouTube channel and update database
 // @Tags videos
 // @Produce json
 // @Param max_results query int false "Maximum number of videos to fetch" default(50)
