@@ -2,10 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/services/api";
-import Button from "@/components/Button";
 import Panel from "@/components/Panel";
 import MediaCard from "@/components/MediaCard";
 import UploadPanel from "@/components/UploadPanel";
+import Pagination from "@/components/Pagination";
 import styles from "./index.module.scss";
 
 const CARD_BASE_WIDTH = 200; // Base card width in pixels
@@ -206,42 +206,6 @@ export default function MediaManagerCards() {
   const totalItems = responseData?.total || 0;
   const totalPages = Math.ceil(totalItems / limit);
 
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      let startPage = Math.max(1, page - 2);
-      let endPage = Math.min(totalPages, page + 2);
-
-      if (page <= 3) {
-        endPage = Math.min(totalPages, 5);
-      }
-      if (page >= totalPages - 2) {
-        startPage = Math.max(1, totalPages - 4);
-      }
-
-      if (startPage > 1) {
-        pageNumbers.push(1);
-        if (startPage > 2) pageNumbers.push("...");
-      }
-
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-
-      if (endPage < totalPages) {
-        if (endPage < totalPages - 1) pageNumbers.push("...");
-        pageNumbers.push(totalPages);
-      }
-    }
-    return pageNumbers;
-  };
-
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -303,50 +267,12 @@ export default function MediaManagerCards() {
         )}
 
         {/* Pagination */}
-        {mediaList.length > 0 && totalPages > 1 && (
-          <div className={styles.pagination}>
-            <div className={styles.paginationInfo}>
-              Page <span>{page}</span> of <span>{totalPages}</span>
-            </div>
-            <div className={styles.paginationControls}>
-              <Button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                variant="secondary"
-                size="sm"
-              >
-                Previous
-              </Button>
-
-              <div className={styles.pageNumbers}>
-                {getPageNumbers().map((pageNum, index) =>
-                  pageNum === "..." ? (
-                    <span key={`dots-${index}`} className={styles.dots}>
-                      ...
-                    </span>
-                  ) : (
-                    <Button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      variant={page === pageNum ? "primary" : "secondary"}
-                      size="sm"
-                    >
-                      {pageNum}
-                    </Button>
-                  ),
-                )}
-              </div>
-
-              <Button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page >= totalPages}
-                variant="secondary"
-                size="sm"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
+        {mediaList.length > 0 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         )}
       </Panel>
     </div>

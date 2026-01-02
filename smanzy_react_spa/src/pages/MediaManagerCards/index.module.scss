@@ -252,55 +252,6 @@
 	color: var(--color-text-secondary);
 }
 
-/* Pagination */
-.pagination {
-	margin-top: $spacing-4;
-	padding: $spacing-4 $spacing-6;
-	background-color: var(--color-background-secondary);
-	border: 1px solid var(--color-card-border);
-	border-radius: $radius-lg;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-}
-
-.paginationInfo {
-	display: none;
-
-	@include breakpoint($breakpoint-sm) {
-		display: block;
-	}
-
-	font-size: 0.875rem;
-	color: var(--color-text-secondary);
-
-	span {
-		font-weight: 500;
-	}
-}
-
-.paginationControls {
-	display: flex;
-	gap: $spacing-2;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-
-	@include breakpoint($breakpoint-sm) {
-		width: auto;
-	}
-}
-
-.pageNumbers {
-	display: flex;
-	gap: $spacing-1;
-}
-
-.dots {
-	padding: $spacing-1 $spacing-3;
-	color: var(--color-text-muted);
-}
-
 .loadingSpinner {
 	display: flex;
 	align-items: center;

@@ -151,7 +151,7 @@
 }
 
 .videosSection {
-	padding: 60px 20px 80px;
+	padding: 26px 0px 20px 0px;
 	position: relative;
 	z-index: 1;
 	background: transparent;
@@ -220,6 +220,14 @@
 
 .loading {
 	color: var(--color-accent);
+	font-style: italic;
+	grid-column: 1 / -1;
+	padding: 40px;
+	font-size: 1.1rem;
+}
+
+.noVideos {
+	color: var(--color-text-muted);
 	font-style: italic;
 	grid-column: 1 / -1;
 	padding: 40px;
