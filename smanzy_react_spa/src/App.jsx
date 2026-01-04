@@ -3,6 +3,8 @@ import { RouterProvider } from 'react-router-dom';
 import router from '@/routes/index.jsx';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
+import { VersionProvider } from '@/context/VersionContext';
+
 // The QueryClient is used to manage and cache data throughout the application.
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -18,7 +20,9 @@ function App() {
     return (
         <ThemeProvider>
             <QueryClientProvider client={queryClient}>
-                <RouterProvider router={router} />
+                <VersionProvider>
+                    <RouterProvider router={router} />
+                </VersionProvider>
             </QueryClientProvider>
         </ThemeProvider>
     );
