@@ -18,9 +18,9 @@ export default function UserManagement() {
     const queryClient = useQueryClient();
 
     const [showDeleted, setShowDeleted] = useState(false);
-    const [editingUser, setEditingUser] = useState(null);
-    const [resetPasswordUser, setResetPasswordUser] = useState(null);
-    const [managingRolesUser, setManagingRolesUser] = useState(null);
+    const [editingUserId, setEditingUserId] = useState(null);
+    const [resetPasswordUserId, setResetPasswordUserId] = useState(null);
+    const [managingRolesUserId, setManagingRolesUserId] = useState(null);
     const [newPassword, setNewPassword] = useState('');
     const [editFormData, setEditFormData] = useState({});
     const [newRoleName, setNewRoleName] = useState('');
@@ -60,7 +60,7 @@ export default function UserManagement() {
         mutationFn: ({ id, data }) => api.put(`/users/${id}`, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
-            setEditingUser(null);
+            setEditingUserId(null);
             setEditFormData({});
         },
         onError: (err) => {
@@ -96,7 +96,7 @@ export default function UserManagement() {
         mutationFn: ({ id, password }) => api.put(`/users/${id}/password`, { new_password: password }),
         onSuccess: () => {
             alert('Password reset successfully!');
-            setResetPasswordUser(null);
+            setResetPasswordUserId(null);
             setNewPassword('');
         },
         onError: (err) => {
@@ -128,7 +128,7 @@ export default function UserManagement() {
     });
 
     const handleEdit = (user) => {
-        setEditingUser(user);
+        setEditingUserId(user.id);
         setEditFormData({
             name: user.name || '',
             tel: user.tel || '',
@@ -141,8 +141,8 @@ export default function UserManagement() {
     };
 
     const handleEditSubmit = () => {
-        if (editingUser) {
-            updateUserMutation.mutate({ id: editingUser.id, data: editFormData });
+        if (editingUserId) {
+            updateUserMutation.mutate({ id: editingUserId, data: editFormData });
         }
     };
 
@@ -159,24 +159,24 @@ export default function UserManagement() {
     };
 
     const handleResetPassword = () => {
-        if (resetPasswordUser && newPassword) {
+        if (resetPasswordUserId && newPassword) {
             if (newPassword.length < 8) {
                 alert('Password must be at least 8 characters long');
                 return;
             }
-            resetPasswordMutation.mutate({ id: resetPasswordUser.id, password: newPassword });
+            resetPasswordMutation.mutate({ id: resetPasswordUserId, password: newPassword });
         }
     };
 
     const handleAssignRole = () => {
-        if (managingRolesUser && newRoleName.trim()) {
-            assignRoleMutation.mutate({ userId: managingRolesUser.id, roleName: newRoleName.trim().toLowerCase() });
+        if (managingRolesUserId && newRoleName.trim()) {
+            assignRoleMutation.mutate({ userId: managingRolesUserId, roleName: newRoleName.trim().toLowerCase() });
         }
     };
 
     const handleRemoveRole = (roleName) => {
-        if (managingRolesUser && window.confirm(`Remove role "${roleName}"?`)) {
-            removeRoleMutation.mutate({ userId: managingRolesUser.id, roleName });
+        if (managingRolesUserId && window.confirm(`Remove role "${roleName}"?`)) {
+            removeRoleMutation.mutate({ userId: managingRolesUserId, roleName });
         }
     };
 
@@ -228,6 +228,11 @@ export default function UserManagement() {
     const users = data?.data || [];
     const totalUsers = users.length;
 
+    // Derived state
+    const editingUser = users.find((u) => u.id === editingUserId);
+    const resetPasswordUser = users.find((u) => u.id === resetPasswordUserId);
+    const managingRolesUser = users.find((u) => u.id === managingRolesUserId);
+
     // Client-side pagination
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -249,15 +254,6 @@ export default function UserManagement() {
                         Manage users, roles, and permissions
                     </p>
                 </div>
-                <div className={styles.headerActions}>
-                    <Button
-                        onClick={() => setShowDeleted(!showDeleted)}
-                        variant={showDeleted ? 'primary' : 'secondary'}
-                        size="sm"
-                    >
-                        {showDeleted ? 'Hide Deleted' : 'Show Deleted'}
-                    </Button>
-                </div>
             </div>
 
             {/* Users List */}
@@ -276,6 +272,15 @@ export default function UserManagement() {
                             Page {page} of {totalPages}
                         </div>
                     )}
+                    <div className={styles.headerActions}>
+                        <Button
+                            onClick={() => setShowDeleted(!showDeleted)}
+                            variant={showDeleted ? 'primary' : 'secondary'}
+                            size="sm"
+                        >
+                            {showDeleted ? 'Hide Deleted' : 'Show Deleted'}
+                        </Button>
+                    </div>
                 </div>
 
                 {paginatedUsers.length === 0 ? (
@@ -343,13 +348,13 @@ export default function UserManagement() {
                                                                 <Edit />
                                                             </IconButton>
                                                             <IconButton
-                                                                onClick={() => setManagingRolesUser(user)}
+                                                                onClick={() => setManagingRolesUserId(user.id)}
                                                                 title="Manage Roles"
                                                             >
                                                                 <UserCog />
                                                             </IconButton>
                                                             <IconButton
-                                                                onClick={() => setResetPasswordUser(user)}
+                                                                onClick={() => setResetPasswordUserId(user.id)}
                                                                 title="Reset Password"
                                                             >
                                                                 <Key />
@@ -406,7 +411,7 @@ export default function UserManagement() {
             <Modal
                 isOpen={!!editingUser}
                 onClose={() => {
-                    setEditingUser(null);
+                    setEditingUserId(null);
                     setEditFormData({});
                 }}
                 title="Edit User"
@@ -485,7 +490,7 @@ export default function UserManagement() {
                     <div className={styles.modalActions}>
                         <Button
                             onClick={() => {
-                                setEditingUser(null);
+                                setEditingUserId(null);
                                 setEditFormData({});
                             }}
                             variant="secondary"
@@ -506,7 +511,7 @@ export default function UserManagement() {
             <Modal
                 isOpen={!!managingRolesUser}
                 onClose={() => {
-                    setManagingRolesUser(null);
+                    setManagingRolesUserId(null);
                     setNewRoleName('');
                 }}
                 title="Manage User Roles"
@@ -571,7 +576,7 @@ export default function UserManagement() {
                     <div className={styles.modalActions}>
                         <Button
                             onClick={() => {
-                                setManagingRolesUser(null);
+                                setManagingRolesUserId(null);
                                 setNewRoleName('');
                             }}
                             variant="secondary"
@@ -586,7 +591,7 @@ export default function UserManagement() {
             <Modal
                 isOpen={!!resetPasswordUser}
                 onClose={() => {
-                    setResetPasswordUser(null);
+                    setResetPasswordUserId(null);
                     setNewPassword('');
                 }}
                 title="Reset Password"
@@ -608,7 +613,7 @@ export default function UserManagement() {
                     <div className={styles.modalActions}>
                         <Button
                             onClick={() => {
-                                setResetPasswordUser(null);
+                                setResetPasswordUserId(null);
                                 setNewPassword('');
                             }}
                             variant="secondary"
