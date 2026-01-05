@@ -160,6 +160,13 @@ export default function MediaManagerCards() {
         }
     };
 
+    const handleDownload = (media) => {
+        window.open(
+            import.meta.env.VITE_API_BASE_URL.replace("/api", "") + media.url,
+            "_blank",
+        );
+    };
+
     if (isPending) {
         return (
             <div className={styles.loadingSpinner}>
@@ -237,8 +244,6 @@ export default function MediaManagerCards() {
                             <MediaCard
                                 key={media.id}
                                 media={media}
-                                onDelete={handleDelete}
-                                onDownload={handleDownload}
                                 canManage={canManage(media)}
                                 canView={canView(media)}
                             />
