@@ -18,6 +18,11 @@ type Album struct {
 	// json:"-" prevents endless recursion or exposing too much user info.
 	Creator User `gorm:"foreignKey:UserID" json:"-"`
 
+	// IsPublic indicates if the album is public and can be viewed by anyone
+	IsPublic bool `gorm:"default:false" json:"is_public"`
+	// IsShared indicates if the album is shared with other users
+	IsShared bool `gorm:"default:false" json:"is_shared"`
+
 	// MediaFiles represents the many-to-many relationship with Media
 	// An album can contain multiple media files, and a media file can belong to multiple albums
 	// "many2many:album_media" tells GORM to create a join table named "album_media"
