@@ -265,6 +265,7 @@ yarn test
 - `GET /api/users` - List all users
 - `PUT /api/users/:id` - Update user
 - `DELETE /api/users/:id` - Delete user
+- `GET /api/albums/all` - List all albums from all users
 
 ---
 
