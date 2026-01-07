@@ -219,6 +219,13 @@ func main() {
 			albums.DELETE("/:id/media", albumHandler.RemoveMediaFromAlbumHandler) // Remove media from album
 		}
 
+		// Admin-only album routes
+		adminAlbums := protectedAPI.Group("/albums")
+		adminAlbums.Use(middleware.RoleMiddleware("admin"))
+		{
+			adminAlbums.GET("/all", albumHandler.GetAllAlbumsHandler) // Get all albums from all users (admin only)
+		}
+
 		// Video routes (authenticated)
 		videos := protectedAPI.Group("/videos")
 		{

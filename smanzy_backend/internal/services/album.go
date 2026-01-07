@@ -59,6 +59,16 @@ func (as *AlbumService) GetUserAlbums(userID uint) ([]models.Album, error) {
 	return albums, nil
 }
 
+// GetAllAlbums retrieves all albums from all users
+func (as *AlbumService) GetAllAlbums() ([]models.Album, error) {
+	var albums []models.Album
+	if err := as.db.Preload("MediaFiles").
+		Find(&albums).Error; err != nil {
+		return nil, err
+	}
+	return albums, nil
+}
+
 // UpdateAlbum updates an album's title and description
 func (as *AlbumService) UpdateAlbum(albumID uint, title, description string) (*models.Album, error) {
 	album, err := as.GetAlbumByID(albumID)

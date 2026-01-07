@@ -91,6 +91,21 @@ func (ah *AlbumHandler) GetUserAlbumsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, albums)
 }
 
+// GetAllAlbumsHandler retrieves all albums from all users (admin only)
+func (ah *AlbumHandler) GetAllAlbumsHandler(c *gin.Context) {
+	albums, err := ah.albumService.GetAllAlbums()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: err.Error()})
+		return
+	}
+
+	if albums == nil {
+		albums = []models.Album{}
+	}
+
+	c.JSON(http.StatusOK, albums)
+}
+
 // UpdateAlbumHandler updates an album's details
 func (ah *AlbumHandler) UpdateAlbumHandler(c *gin.Context) {
 	albumID, err := strconv.ParseUint(c.Param("id"), 10, 32)
