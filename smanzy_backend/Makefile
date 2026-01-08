@@ -1,4 +1,4 @@
-.PHONY: help build run test clean deps lint fmt install-tools
+.PHONY: help build run test clean deps lint fmt install-tools sqlc
 
 # Variables
 BINARY_NAME=smanzy
@@ -15,6 +15,7 @@ help:
 	@echo "  make fmt           - Format code"
 	@echo "  make lint          - Lint code (requires golangci-lint)"
 	@echo "  make dev           - Run in development mode"
+	@echo "  make sqlc          - Generate code from SQL queries"
 
 # Install dependencies
 deps:
@@ -60,6 +61,13 @@ install-tools:
 	@echo "Installing development tools..."
 	go install github.com/air-verse/air@latest
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	go install github.com/kyleconroy/sqlc/cmd/sqlc@latest
+
+# Generate code from SQL queries
+sqlc:
+	@echo "Generating code from SQL queries..."
+	@command -v sqlc >/dev/null 2>&1 || (echo "Installing sqlc..."; go install github.com/kyleconroy/sqlc/cmd/sqlc@latest)
+	sqlc generate
 
 # Clean build artifacts
 clean:
