@@ -11,17 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	// godotenv loads environment variables from a .env file
 	"github.com/joho/godotenv"
-	// GORM is an Object Relational Mapper (ORM) for database interactions
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-
 	// Internal packages from our own project
 	"time"
 
 	"github.com/ristep/smanzy_backend/internal/auth"
+	"github.com/ristep/smanzy_backend/internal/db"
 	"github.com/ristep/smanzy_backend/internal/handlers"
 	"github.com/ristep/smanzy_backend/internal/middleware"
-	"github.com/ristep/smanzy_backend/internal/models"
 	"github.com/ristep/smanzy_backend/internal/services"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
@@ -68,39 +64,38 @@ func main() {
 	}
 
 	// 3. Database Connection
-	// Connect to PostgreSQL using GORM
-	db, err := gorm.Open(postgres.Open(dbDSN), &gorm.Config{})
+	// Connect to PostgreSQL using standard library
+	conn, err := db.Connect(dbDSN)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	defer conn.Close()
 
-	// 4. Database Migration
-	// flagged migration, if specified, flag
-	// the Go structs defined in `internal/models`.
-	// Be careful with this in production!
+	// Initialize sqlc queries
+	queries := db.New(conn)
+
+	// 4. Database Migration (Optional: call manual migration tool here)
 	if *migrate {
-		if err := db.AutoMigrate(&models.User{}, &models.Role{}, &models.Media{}, &models.Album{}, &models.Video{}); err != nil {
-			log.Fatalf("Failed to auto-migrate models: %v", err)
-		}
+		log.Println("Manual migration requested. Please use internal/db/schema/schema.sql to initialize your database.")
 	}
 
-	log.Println("Database migration completed successfully")
+	log.Println("Database connection established")
 
 	// 5. Seeding Data
 	// Ensure that basic roles exist in the database
-	db.FirstOrCreate(&models.Role{}, models.Role{Name: "user"})
-	db.FirstOrCreate(&models.Role{}, models.Role{Name: "admin"})
+	_, _ = conn.Exec("INSERT INTO roles (name) VALUES ('user') ON CONFLICT (name) DO NOTHING")
+	_, _ = conn.Exec("INSERT INTO roles (name) VALUES ('admin') ON CONFLICT (name) DO NOTHING")
 
 	// 6. Service Initialization
 	// Initialize our services and handlers, injecting dependencies (like the DB connection)
 	jwtService := auth.NewJWTService(jwtSecret)
 	youtubeService := services.NewYouTubeService(youtubeAPIKey, youtubeChannelID)
 
-	authHandler := handlers.NewAuthHandler(db, jwtService)
-	userHandler := handlers.NewUserHandler(db)
-	mediaHandler := handlers.NewMediaHandler(db)
-	albumHandler := handlers.NewAlbumHandler(db)
-	videoHandler := handlers.NewVideoHandler(db, youtubeService)
+	authHandler := handlers.NewAuthHandler(conn, queries, jwtService)
+	userHandler := handlers.NewUserHandler(conn, queries)
+	mediaHandler := handlers.NewMediaHandler(conn, queries)
+	albumHandler := handlers.NewAlbumHandler(conn, queries)
+	videoHandler := handlers.NewVideoHandler(conn, queries, youtubeService)
 
 	// 7. Router Setup
 	// Create a new Gin router with default middleware (logger and recovery)
@@ -166,7 +161,7 @@ func main() {
 	// Requires a valid JWT token in the Authorization header
 	protectedAPI := router.Group("/api")
 	// Apply the AuthMiddleware to check for the token
-	protectedAPI.Use(middleware.AuthMiddleware(jwtService, db))
+	protectedAPI.Use(middleware.AuthMiddleware(jwtService, queries))
 	{
 		// Authenticated User routes
 		profile := protectedAPI.Group("/profile")

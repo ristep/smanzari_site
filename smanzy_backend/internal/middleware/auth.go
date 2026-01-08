@@ -2,18 +2,19 @@ package middleware
 
 // zz
 import (
+	"database/sql"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
 	"github.com/ristep/smanzy_backend/internal/auth"
+	"github.com/ristep/smanzy_backend/internal/db"
 	"github.com/ristep/smanzy_backend/internal/models"
 )
 
 // AuthMiddleware validates JWT tokens and attaches user claims to the request context
-func AuthMiddleware(jwtService *auth.JWTService, db *gorm.DB) gin.HandlerFunc {
+func AuthMiddleware(jwtService *auth.JWTService, queries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Extract the token from the Authorization header
 		authHeader := c.GetHeader("Authorization")
@@ -42,9 +43,9 @@ func AuthMiddleware(jwtService *auth.JWTService, db *gorm.DB) gin.HandlerFunc {
 		}
 
 		// Fetch the user from the database
-		var user models.User
-		if err := db.Preload("Roles").First(&user, claims.UserID).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
+		userRow, err := queries.GetUserByID(c.Request.Context(), int32(claims.UserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			} else {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
@@ -53,8 +54,33 @@ func AuthMiddleware(jwtService *auth.JWTService, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Fetch roles
+		roles, _ := queries.GetUserRoles(c.Request.Context(), userRow.ID)
+
+		// Map to models.User (DTO)
+		apiUser := models.User{
+			ID:            uint(userRow.ID),
+			Email:         userRow.Email,
+			Name:          userRow.Name,
+			Tel:           userRow.Tel,
+			Age:           int(userRow.Age),
+			Gender:        userRow.Gender,
+			Address:       userRow.Address,
+			City:          userRow.City,
+			Country:       userRow.Country,
+			EmailVerified: userRow.EmailVerified,
+			CreatedAt:     userRow.CreatedAt,
+			UpdatedAt:     userRow.UpdatedAt,
+		}
+		for _, r := range roles {
+			apiUser.Roles = append(apiUser.Roles, models.Role{
+				ID:   uint(r.ID),
+				Name: r.Name,
+			})
+		}
+
 		// Attach user and claims to context
-		c.Set("user", &user)
+		c.Set("user", &apiUser)
 		c.Set("claims", claims)
 
 		c.Next()
