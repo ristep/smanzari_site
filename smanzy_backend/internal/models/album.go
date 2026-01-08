@@ -15,8 +15,11 @@ type Album struct {
 
 	// Creator is the actual User struct that corresponds to UserID.
 	// gorm:"foreignKey:UserID" tells GORM how to link the two.
-	// json:"-" prevents endless recursion or exposing too much user info.
+	// json:"-" prevents exposing the whole user object in this field.
 	Creator User `gorm:"foreignKey:UserID" json:"-"`
+
+	// UserName is a helper for the API response, populated via joins or preload
+	UserName string `gorm:"->" json:"user_name"`
 
 	// IsPublic indicates if the album is public and can be viewed by anyone
 	IsPublic bool `gorm:"default:false" json:"is_public"`

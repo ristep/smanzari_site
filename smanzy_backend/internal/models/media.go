@@ -23,6 +23,9 @@ type Media struct {
 	// json:"-" prevents endless recursion or exposing too much user info when listing media.
 	UploadedBy User `gorm:"foreignKey:UserID" json:"-"`
 
+	// UserName is a helper for the API response, populated via joins or preload
+	UserName string `gorm:"->" json:"user_name"`
+
 	// Albums represents the many-to-many relationship with Album
 	// A media file can belong to multiple albums, and an album can contain multiple media files
 	// "many2many:album_media" tells GORM to use the join table named "album_media"

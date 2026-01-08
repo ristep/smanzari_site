@@ -18,7 +18,7 @@ func NewAlbumService(db *gorm.DB) *AlbumService {
 }
 
 // CreateAlbum creates a new album for a user
-func (as *AlbumService) CreateAlbum(userID uint, title, description string) (*models.Album, error) {
+func (as *AlbumService) CreateAlbum(userID uint, title, description, userName string) (*models.Album, error) {
 	if title == "" {
 		return nil, errors.New("album title is required")
 	}
@@ -27,6 +27,7 @@ func (as *AlbumService) CreateAlbum(userID uint, title, description string) (*mo
 		Title:       title,
 		Description: description,
 		UserID:      userID,
+		UserName:    userName,
 	}
 
 	if err := as.db.Create(&album).Error; err != nil {
@@ -39,7 +40,10 @@ func (as *AlbumService) CreateAlbum(userID uint, title, description string) (*mo
 // GetAlbumByID retrieves an album by its ID
 func (as *AlbumService) GetAlbumByID(albumID uint) (*models.Album, error) {
 	var album models.Album
-	if err := as.db.Preload("MediaFiles").First(&album, albumID).Error; err != nil {
+	if err := as.db.Preload("MediaFiles").
+		Select("album.*, users.name as user_name").
+		Joins("LEFT JOIN users ON users.id = album.user_id").
+		First(&album, albumID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("album not found")
 		}
@@ -53,6 +57,8 @@ func (as *AlbumService) GetUserAlbums(userID uint) ([]models.Album, error) {
 	var albums []models.Album
 	if err := as.db.Where("user_id = ?", userID).
 		Preload("MediaFiles").
+		Select("album.*, users.name as user_name").
+		Joins("LEFT JOIN users ON users.id = album.user_id").
 		Find(&albums).Error; err != nil {
 		return nil, err
 	}
@@ -63,6 +69,8 @@ func (as *AlbumService) GetUserAlbums(userID uint) ([]models.Album, error) {
 func (as *AlbumService) GetAllAlbums() ([]models.Album, error) {
 	var albums []models.Album
 	if err := as.db.Preload("MediaFiles").
+		Select("album.*, users.name as user_name").
+		Joins("LEFT JOIN users ON users.id = album.user_id").
 		Find(&albums).Error; err != nil {
 		return nil, err
 	}

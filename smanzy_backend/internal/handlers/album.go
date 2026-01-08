@@ -42,7 +42,7 @@ func (ah *AlbumHandler) CreateAlbumHandler(c *gin.Context) {
 		return
 	}
 
-	album, err := ah.albumService.CreateAlbum(user.ID, req.Title, req.Description)
+	album, err := ah.albumService.CreateAlbum(user.ID, req.Title, req.Description, user.Name)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: err.Error()})
 		return

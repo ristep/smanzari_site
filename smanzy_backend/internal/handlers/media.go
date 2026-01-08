@@ -78,6 +78,7 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 		MimeType:   file.Header.Get("Content-Type"),
 		Size:       file.Size,
 		UserID:     user.ID,
+		UserName:   user.Name,
 	}
 
 	if err := mh.db.Create(&media).Error; err != nil {
@@ -95,7 +96,7 @@ func (mh *MediaHandler) GetMediaHandler(c *gin.Context) {
 	mediaID := c.Param("id")
 
 	var media models.Media
-	if err := mh.db.First(&media, mediaID).Error; err != nil {
+	if err := mh.db.Select("media.*, users.name as user_name").Joins("LEFT JOIN users ON users.id = media.user_id").First(&media, mediaID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
 			return
@@ -117,7 +118,7 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 	mediaID := c.Param("id")
 
 	var media models.Media
-	if err := mh.db.First(&media, mediaID).Error; err != nil {
+	if err := mh.db.Select("media.*, users.name as user_name").Joins("LEFT JOIN users ON users.id = media.user_id").First(&media, mediaID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
 			return
@@ -178,7 +179,12 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 	}
 
 	var medias []models.Media
-	if err := mh.db.Select("id, filename, url, type, mime_type, size, created_at, user_id").Order("created_at desc").Limit(limit).Offset(offset).Find(&medias).Error; err != nil {
+	if err := mh.db.Table("media").
+		Select("media.*, users.name as user_name").
+		Joins("LEFT JOIN users ON users.id = media.user_id").
+		Order("media.created_at desc").
+		Limit(limit).Offset(offset).
+		Find(&medias).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error"})
 		return
 	}
@@ -215,6 +221,7 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error"})
 		return
 	}
+	media.UserName = media.UploadedBy.Name
 
 	// Access Control: Owner or Admin
 	if media.UserID != user.ID && !user.HasRole("admin") {
@@ -292,7 +299,7 @@ func (mh *MediaHandler) DeleteMediaHandler(c *gin.Context) {
 	user := authUser.(*models.User)
 
 	var media models.Media
-	if err := mh.db.First(&media, mediaID).Error; err != nil {
+	if err := mh.db.Select("media.*, users.name as user_name").Joins("LEFT JOIN users ON users.id = media.user_id").First(&media, mediaID).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
 			return
