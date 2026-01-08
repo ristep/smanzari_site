@@ -16,6 +16,9 @@ help:
 	@echo "  make lint          - Lint code (requires golangci-lint)"
 	@echo "  make dev           - Run in development mode"
 	@echo "  make sqlc          - Generate code from SQL queries"
+	@echo "  make migrate-up    - Run database migrations"
+	@echo "  make migrate-down  - Rollback database migrations"
+	@echo "  make migrate-create - Create new migration file"
 
 # Install dependencies
 deps:
@@ -68,6 +71,38 @@ sqlc:
 	@echo "Generating code from SQL queries..."
 	@command -v sqlc >/dev/null 2>&1 || (echo "Installing sqlc..."; go install github.com/kyleconroy/sqlc/cmd/sqlc@latest)
 	sqlc generate
+
+# Run database migrations up
+migrate-up:
+	@echo "Running database migrations..."
+	@for file in internal/db/migrations/*.up.sql; do \
+		echo "Applying $$file"; \
+		psql "$$DB_DSN" < "$$file" || exit 1; \
+	done
+	@echo "Migrations completed"
+
+# Rollback database migrations
+migrate-down:
+	@echo "Rolling back database migrations..."
+	@for file in $$(ls -r internal/db/migrations/*.down.sql); do \
+		echo "Rolling back $$file"; \
+		psql "$$DB_DSN" < "$$file" || exit 1; \
+	done
+	@echo "Rollback completed"
+
+# Create new migration
+migrate-create:
+	@read -p "Enter migration name: " name; \
+	timestamp=$$(date +%Y%m%d_%H%M%S); \
+	up_file="internal/db/migrations/$${timestamp}_$${name}.up.sql"; \
+	down_file="internal/db/migrations/$${timestamp}_$${name}.down.sql"; \
+	echo "-- Migration: $$name" > $$up_file; \
+	echo "-- Description: " >> $$up_file; \
+	echo "" >> $$up_file; \
+	echo "-- Rollback: $$name" > $$down_file; \
+	echo "-- Description: " >> $$down_file; \
+	echo "" >> $$down_file; \
+	echo "Created migration files: $$up_file and $$down_file"
 
 # Clean build artifacts
 clean:
