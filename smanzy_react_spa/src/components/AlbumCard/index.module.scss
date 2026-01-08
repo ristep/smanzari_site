@@ -77,6 +77,24 @@
     font-size: 0.85rem;
     font-weight: 600;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    z-index: 2;
+}
+
+.userNameOverlay {
+    position: absolute;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    max-width: calc(100% - 1.5rem);
+    @include text-ellipsis;
+    z-index: 2;
 }
 
 .albumInfo {

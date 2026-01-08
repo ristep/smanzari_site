@@ -30,6 +30,11 @@ export default function AlbumCard({ album, onManage, onDelete, isDeleting }) {
                 <div className={styles.mediaCountBadge}>
                     {album.media_files?.length || 0}
                 </div>
+                {album.user_name && (
+                    <div className={styles.userNameOverlay}>
+                        {album.user_name}
+                    </div>
+                )}
             </div>
 
             <div className={styles.albumInfo}>

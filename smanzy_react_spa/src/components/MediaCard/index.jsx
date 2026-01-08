@@ -83,8 +83,8 @@ export default function MediaCard({
 
                     <div className={styles.cardMeta}>
                         <div className={styles.metaItem}>
-                            <span className={styles.metaLabel}>Size:</span>
-                            <span className={styles.metaValue}>{formatFileSize(media.size)}</span>
+                            <div className={styles.userName}>{media.user_name}</div>
+                            <div className={styles.metaValue}>{formatFileSize(media.size)}</div>
                         </div>
                     </div>
 
