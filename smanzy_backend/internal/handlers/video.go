@@ -109,7 +109,7 @@ func (h *VideoHandler) GetVideoHandler(c *gin.Context) {
 		return
 	}
 
-	row, err := h.queries.GetVideoByID(c.Request.Context(), int32(id))
+	row, err := h.queries.GetVideoByID(c.Request.Context(), int64(id))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})

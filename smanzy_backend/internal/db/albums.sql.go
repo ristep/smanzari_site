@@ -17,8 +17,8 @@ ON CONFLICT DO NOTHING
 `
 
 type AddMediaToAlbumParams struct {
-	AlbumID int32 `json:"album_id"`
-	MediaID int32 `json:"media_id"`
+	AlbumID int64 `json:"album_id"`
+	MediaID int64 `json:"media_id"`
 }
 
 func (q *Queries) AddMediaToAlbum(ctx context.Context, arg AddMediaToAlbumParams) error {
@@ -28,9 +28,12 @@ func (q *Queries) AddMediaToAlbum(ctx context.Context, arg AddMediaToAlbumParams
 
 const createAlbum = `-- name: CreateAlbum :one
 INSERT INTO album (
-    title, description, user_id, is_public, is_shared
+    title, description, user_id, is_public, is_shared,
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
 RETURNING id, title, description, user_id, is_public, is_shared, created_at, updated_at, deleted_at
 `
@@ -38,7 +41,7 @@ RETURNING id, title, description, user_id, is_public, is_shared, created_at, upd
 type CreateAlbumParams struct {
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
-	UserID      int32          `json:"user_id"`
+	UserID      int64          `json:"user_id"`
 	IsPublic    sql.NullBool   `json:"is_public"`
 	IsShared    sql.NullBool   `json:"is_shared"`
 }
@@ -72,7 +75,7 @@ WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
 
-func (q *Queries) GetAlbumByID(ctx context.Context, id int32) (Album, error) {
+func (q *Queries) GetAlbumByID(ctx context.Context, id int64) (Album, error) {
 	row := q.db.QueryRowContext(ctx, getAlbumByID, id)
 	var i Album
 	err := row.Scan(
@@ -95,7 +98,7 @@ JOIN album_media am ON am.media_id = m.id
 WHERE am.album_id = $1 AND m.deleted_at IS NULL
 `
 
-func (q *Queries) GetAlbumMedia(ctx context.Context, albumID int32) ([]Medium, error) {
+func (q *Queries) GetAlbumMedia(ctx context.Context, albumID int64) ([]Medium, error) {
 	rows, err := q.db.QueryContext(ctx, getAlbumMedia, albumID)
 	if err != nil {
 		return nil, err
@@ -139,10 +142,10 @@ ORDER BY a.created_at DESC
 `
 
 type ListAllAlbumsRow struct {
-	ID          int32          `json:"id"`
+	ID          int64          `json:"id"`
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
-	UserID      int32          `json:"user_id"`
+	UserID      int64          `json:"user_id"`
 	IsPublic    sql.NullBool   `json:"is_public"`
 	IsShared    sql.NullBool   `json:"is_shared"`
 	CreatedAt   int64          `json:"created_at"`
@@ -194,10 +197,10 @@ ORDER BY a.created_at DESC
 `
 
 type ListUserAlbumsRow struct {
-	ID          int32          `json:"id"`
+	ID          int64          `json:"id"`
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
-	UserID      int32          `json:"user_id"`
+	UserID      int64          `json:"user_id"`
 	IsPublic    sql.NullBool   `json:"is_public"`
 	IsShared    sql.NullBool   `json:"is_shared"`
 	CreatedAt   int64          `json:"created_at"`
@@ -206,7 +209,7 @@ type ListUserAlbumsRow struct {
 	UserName    string         `json:"user_name"`
 }
 
-func (q *Queries) ListUserAlbums(ctx context.Context, userID int32) ([]ListUserAlbumsRow, error) {
+func (q *Queries) ListUserAlbums(ctx context.Context, userID int64) ([]ListUserAlbumsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listUserAlbums, userID)
 	if err != nil {
 		return nil, err
@@ -246,8 +249,8 @@ WHERE album_id = $1 AND media_id = $2
 `
 
 type RemoveMediaFromAlbumParams struct {
-	AlbumID int32 `json:"album_id"`
-	MediaID int32 `json:"media_id"`
+	AlbumID int64 `json:"album_id"`
+	MediaID int64 `json:"media_id"`
 }
 
 func (q *Queries) RemoveMediaFromAlbum(ctx context.Context, arg RemoveMediaFromAlbumParams) error {
@@ -261,7 +264,7 @@ SET deleted_at = NOW()
 WHERE id = $1
 `
 
-func (q *Queries) SoftDeleteAlbum(ctx context.Context, id int32) error {
+func (q *Queries) SoftDeleteAlbum(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, softDeleteAlbum, id)
 	return err
 }
@@ -273,13 +276,13 @@ SET
     description = $3,
     is_public = $4,
     is_shared = $5,
-    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
 RETURNING id, title, description, user_id, is_public, is_shared, created_at, updated_at, deleted_at
 `
 
 type UpdateAlbumParams struct {
-	ID          int32          `json:"id"`
+	ID          int64          `json:"id"`
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
 	IsPublic    sql.NullBool   `json:"is_public"`

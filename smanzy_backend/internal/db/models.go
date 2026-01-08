@@ -9,10 +9,10 @@ import (
 )
 
 type Album struct {
-	ID          int32          `json:"id"`
+	ID          int64          `json:"id"`
 	Title       string         `json:"title"`
 	Description sql.NullString `json:"description"`
-	UserID      int32          `json:"user_id"`
+	UserID      int64          `json:"user_id"`
 	IsPublic    sql.NullBool   `json:"is_public"`
 	IsShared    sql.NullBool   `json:"is_shared"`
 	CreatedAt   int64          `json:"created_at"`
@@ -21,38 +21,38 @@ type Album struct {
 }
 
 type AlbumMedium struct {
-	AlbumID int32 `json:"album_id"`
-	MediaID int32 `json:"media_id"`
+	AlbumID int64 `json:"album_id"`
+	MediaID int64 `json:"media_id"`
 }
 
 type Medium struct {
-	ID         int32          `json:"id"`
+	ID         int64          `json:"id"`
 	Filename   string         `json:"filename"`
 	StoredName string         `json:"stored_name"`
 	Url        string         `json:"url"`
 	Type       sql.NullString `json:"type"`
 	MimeType   sql.NullString `json:"mime_type"`
 	Size       int64          `json:"size"`
-	UserID     int32          `json:"user_id"`
+	UserID     int64          `json:"user_id"`
 	CreatedAt  int64          `json:"created_at"`
 	UpdatedAt  int64          `json:"updated_at"`
 	DeletedAt  sql.NullTime   `json:"deleted_at"`
 }
 
 type Role struct {
-	ID        int32  `json:"id"`
+	ID        int64  `json:"id"`
 	Name      string `json:"name"`
 	CreatedAt int64  `json:"created_at"`
 	UpdatedAt int64  `json:"updated_at"`
 }
 
 type User struct {
-	ID            int32          `json:"id"`
+	ID            int64          `json:"id"`
 	Email         string         `json:"email"`
 	Password      string         `json:"password"`
 	Name          string         `json:"name"`
 	Tel           sql.NullString `json:"tel"`
-	Age           sql.NullInt32  `json:"age"`
+	Age           sql.NullInt64  `json:"age"`
 	Address       sql.NullString `json:"address"`
 	City          sql.NullString `json:"city"`
 	Country       sql.NullString `json:"country"`
@@ -64,12 +64,12 @@ type User struct {
 }
 
 type UserRole struct {
-	UserID int32 `json:"user_id"`
-	RoleID int32 `json:"role_id"`
+	UserID int64 `json:"user_id"`
+	RoleID int64 `json:"role_id"`
 }
 
 type Video struct {
-	ID           int32          `json:"id"`
+	ID           int64          `json:"id"`
 	VideoID      string         `json:"video_id"`
 	Title        string         `json:"title"`
 	Description  sql.NullString `json:"description"`

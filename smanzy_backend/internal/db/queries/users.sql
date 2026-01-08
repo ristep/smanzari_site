@@ -8,7 +8,9 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE email = $1 AND deleted_at IS NULL
 LIMIT 1;
@@ -23,7 +25,9 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE email = $1
 LIMIT 1;
@@ -38,7 +42,9 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1;
@@ -53,27 +59,34 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE deleted_at IS NULL
 ORDER BY id;
 
 -- name: CreateUser :one
 INSERT INTO users (
-    email, password, name, tel, age, address, city, country, gender
+    email, password, name, tel, age, address, city, country, gender,
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
 RETURNING 
     id, email, password, name, 
     COALESCE(tel, '') as tel, 
-    COALESCE(age, 0) as age, 
+    COALESCE(age, 0)::BIGINT as age, 
     COALESCE(address, '') as address, 
     COALESCE(city, '') as city, 
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at;
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at;
 
 -- name: UpdateUser :one
 UPDATE users
@@ -85,18 +98,20 @@ SET
     city = $6,
     country = $7,
     gender = $8,
-    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
 RETURNING 
     id, email, password, name, 
     COALESCE(tel, '') as tel, 
-    COALESCE(age, 0) as age, 
+    COALESCE(age, 0)::BIGINT as age, 
     COALESCE(address, '') as address, 
     COALESCE(city, '') as city, 
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at;
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at;
 
 -- name: SoftDeleteUser :exec
 UPDATE users

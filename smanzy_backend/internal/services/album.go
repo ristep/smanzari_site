@@ -32,7 +32,7 @@ func (as *AlbumService) CreateAlbum(userID uint, title, description, userName st
 	albumRow, err := as.queries.CreateAlbum(context.Background(), db.CreateAlbumParams{
 		Title:       title,
 		Description: sql.NullString{String: description, Valid: true},
-		UserID:      int32(userID),
+		UserID:      int64(userID),
 	})
 
 	if err != nil {
@@ -52,7 +52,7 @@ func (as *AlbumService) CreateAlbum(userID uint, title, description, userName st
 
 // GetAlbumByID retrieves an album by its ID
 func (as *AlbumService) GetAlbumByID(albumID uint) (*models.Album, error) {
-	albumRow, err := as.queries.GetAlbumByID(context.Background(), int32(albumID))
+	albumRow, err := as.queries.GetAlbumByID(context.Background(), int64(albumID))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, errors.New("album not found")
@@ -98,7 +98,7 @@ func (as *AlbumService) GetAlbumByID(albumID uint) (*models.Album, error) {
 
 // GetUserAlbums retrieves all albums for a user
 func (as *AlbumService) GetUserAlbums(userID uint) ([]models.Album, error) {
-	albumRows, err := as.queries.ListUserAlbums(context.Background(), int32(userID))
+	albumRows, err := as.queries.ListUserAlbums(context.Background(), int64(userID))
 	if err != nil {
 		return nil, err
 	}
@@ -146,13 +146,13 @@ func (as *AlbumService) GetAllAlbums() ([]models.Album, error) {
 
 // UpdateAlbum updates an album's title and description
 func (as *AlbumService) UpdateAlbum(albumID uint, title, description string) (*models.Album, error) {
-	albumRaw, err := as.queries.GetAlbumByID(context.Background(), int32(albumID))
+	albumRaw, err := as.queries.GetAlbumByID(context.Background(), int64(albumID))
 	if err != nil {
 		return nil, err
 	}
 
 	updatedRow, err := as.queries.UpdateAlbum(context.Background(), db.UpdateAlbumParams{
-		ID: int32(albumID),
+		ID: int64(albumID),
 		Title: func() string {
 			if title != "" {
 				return title
@@ -182,26 +182,26 @@ func (as *AlbumService) UpdateAlbum(albumID uint, title, description string) (*m
 // AddMediaToAlbum adds a media file to an album
 func (as *AlbumService) AddMediaToAlbum(albumID, mediaID uint) error {
 	return as.queries.AddMediaToAlbum(context.Background(), db.AddMediaToAlbumParams{
-		AlbumID: int32(albumID),
-		MediaID: int32(mediaID),
+		AlbumID: int64(albumID),
+		MediaID: int64(mediaID),
 	})
 }
 
 // RemoveMediaFromAlbum removes a media file from an album
 func (as *AlbumService) RemoveMediaFromAlbum(albumID, mediaID uint) error {
 	return as.queries.RemoveMediaFromAlbum(context.Background(), db.RemoveMediaFromAlbumParams{
-		AlbumID: int32(albumID),
-		MediaID: int32(mediaID),
+		AlbumID: int64(albumID),
+		MediaID: int64(mediaID),
 	})
 }
 
 // DeleteAlbum performs a soft delete on an album
 func (as *AlbumService) DeleteAlbum(albumID uint) error {
-	return as.queries.SoftDeleteAlbum(context.Background(), int32(albumID))
+	return as.queries.SoftDeleteAlbum(context.Background(), int64(albumID))
 }
 
 // PermanentlyDeleteAlbum permanently deletes an album from the database
 func (as *AlbumService) PermanentlyDeleteAlbum(albumID uint) error {
-	_, err := as.conn.ExecContext(context.Background(), "DELETE FROM album WHERE id = $1", int32(albumID))
+	_, err := as.conn.ExecContext(context.Background(), "DELETE FROM album WHERE id = $1", int64(albumID))
 	return err
 }

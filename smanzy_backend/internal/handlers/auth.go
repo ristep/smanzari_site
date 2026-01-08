@@ -112,7 +112,7 @@ func (ah *AuthHandler) RegisterHandler(c *gin.Context) {
 		Password: string(hashedPassword),
 		Name:     req.Name,
 		Tel:      sql.NullString{String: req.Tel, Valid: req.Tel != ""},
-		Age:      sql.NullInt32{Int32: int32(req.Age), Valid: req.Age != 0},
+		Age:      sql.NullInt64{Int64: int64(req.Age), Valid: req.Age != 0},
 		Gender:   sql.NullString{String: req.Gender, Valid: req.Gender != ""},
 		Address:  sql.NullString{String: req.Address, Valid: req.Address != ""},
 		City:     sql.NullString{String: req.City, Valid: req.City != ""},
@@ -265,7 +265,7 @@ func (ah *AuthHandler) RefreshHandler(c *gin.Context) {
 	}
 
 	// Fetch the user from the database
-	userRow, err := ah.queries.GetUserByID(c.Request.Context(), int32(claims.UserID))
+	userRow, err := ah.queries.GetUserByID(c.Request.Context(), int64(claims.UserID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusUnauthorized, ErrorResponse{Error: "User not found"})
@@ -354,7 +354,7 @@ func (ah *AuthHandler) UpdateProfileHandler(c *gin.Context) {
 
 	// Update fields using sqlc
 	updatedRow, err := ah.queries.UpdateUser(c.Request.Context(), db.UpdateUserParams{
-		ID: int32(userObj.ID),
+		ID: int64(userObj.ID),
 		Name: func() string {
 			if req.Name != "" {
 				return req.Name
@@ -369,7 +369,7 @@ func (ah *AuthHandler) UpdateProfileHandler(c *gin.Context) {
 				return userObj.Tel
 			}
 		}(), Valid: true},
-		Age: sql.NullInt32{Int32: int32(func() int {
+		Age: sql.NullInt64{Int64: int64(func() int {
 			if req.Age != 0 {
 				return req.Age
 			} else {
@@ -436,7 +436,7 @@ func (ah *AuthHandler) DeleteProfileHandler(c *gin.Context) {
 	userObj := user.(*models.User)
 
 	// In Pure SQL, we handle the soft delete
-	err := ah.queries.SoftDeleteUser(c.Request.Context(), int32(userObj.ID))
+	err := ah.queries.SoftDeleteUser(c.Request.Context(), int64(userObj.ID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete profile"})
 		return
@@ -506,7 +506,7 @@ func (uh *UserHandler) GetAllUsersWithDeletedHandler(c *gin.Context) {
 	// We need a specific query for this or just use the one we have and check logic.
 	// Actually, GetUserByEmailWithDeleted exists but ListUsersWithDeleted doesn't.
 	// I'll use a direct query for now or add it to users.sql.
-	rows, err := uh.conn.QueryContext(c.Request.Context(), "SELECT id, email, password, name, COALESCE(tel, '') as tel, COALESCE(age, 0) as age, COALESCE(address, '') as address, COALESCE(city, '') as city, COALESCE(country, '') as country, COALESCE(gender, '') as gender, COALESCE(email_verified, false) as email_verified, created_at, updated_at, deleted_at FROM users ORDER BY id")
+	rows, err := uh.conn.QueryContext(c.Request.Context(), "SELECT id, email, password, name, COALESCE(tel, '') as tel, COALESCE(age, 0) as age, COALESCE(address, '') as address, COALESCE(city, '') as city, COALESCE(country, '') as country, COALESCE(gender, '') as gender, COALESCE(email_verified, false) as email_verified, COALESCE(created_at, 0) as created_at, COALESCE(updated_at, 0) as updated_at, deleted_at FROM users ORDER BY id")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error"})
 		return
@@ -559,7 +559,7 @@ func (uh *UserHandler) RestoreUserHandler(c *gin.Context) {
 		return
 	}
 
-	err = uh.queries.RestoreUser(c.Request.Context(), int32(userID))
+	err = uh.queries.RestoreUser(c.Request.Context(), int64(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error"})
 		return
@@ -577,7 +577,7 @@ func (uh *UserHandler) GetUserByIDHandler(c *gin.Context) {
 		return
 	}
 
-	userRow, err := uh.queries.GetUserByID(c.Request.Context(), int32(userID))
+	userRow, err := uh.queries.GetUserByID(c.Request.Context(), int64(userID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "User not found"})
@@ -648,7 +648,7 @@ func (uh *UserHandler) UpdateUserHandler(c *gin.Context) {
 	currentUserObj := currentUser.(*models.User)
 
 	// Check if user is trying to update someone else (must be admin)
-	if uint32(userID) != uint32(currentUserObj.ID) {
+	if uint64(userID) != uint64(currentUserObj.ID) {
 		if !currentUserObj.HasRole("admin") {
 			c.JSON(http.StatusForbidden, ErrorResponse{Error: "Forbidden"})
 			return
@@ -656,7 +656,7 @@ func (uh *UserHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	// Fetch current user data to merge
-	userRow, err := uh.queries.GetUserByID(c.Request.Context(), int32(userID))
+	userRow, err := uh.queries.GetUserByID(c.Request.Context(), int64(userID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "User not found"})
@@ -668,7 +668,7 @@ func (uh *UserHandler) UpdateUserHandler(c *gin.Context) {
 
 	// Update fields
 	updatedRow, err := uh.queries.UpdateUser(c.Request.Context(), db.UpdateUserParams{
-		ID: int32(userID),
+		ID: int64(userID),
 		Name: func() string {
 			if req.Name != "" {
 				return req.Name
@@ -683,7 +683,7 @@ func (uh *UserHandler) UpdateUserHandler(c *gin.Context) {
 				return userRow.Tel
 			}
 		}(), Valid: true},
-		Age: sql.NullInt32{Int32: int32(func() int {
+		Age: sql.NullInt64{Int64: int64(func() int {
 			if req.Age != 0 {
 				return req.Age
 			} else {
@@ -726,7 +726,7 @@ func (uh *UserHandler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	// Reload with roles
-	roles, _ := uh.queries.GetUserRoles(c.Request.Context(), int32(userID))
+	roles, _ := uh.queries.GetUserRoles(c.Request.Context(), int64(userID))
 	apiUser := models.User{
 		ID:            uint(updatedRow.ID),
 		Email:         updatedRow.Email,
@@ -760,7 +760,7 @@ func (uh *UserHandler) DeleteUserHandler(c *gin.Context) {
 		return
 	}
 
-	err = uh.queries.SoftDeleteUser(c.Request.Context(), int32(userID))
+	err = uh.queries.SoftDeleteUser(c.Request.Context(), int64(userID))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete user"})
 		return
@@ -809,7 +809,7 @@ func (uh *UserHandler) AssignRoleHandler(c *gin.Context) {
 
 	// Assign the role
 	err = uh.queries.AssignRole(c.Request.Context(), db.AssignRoleParams{
-		UserID: int32(userID),
+		UserID: int64(userID),
 		RoleID: role.ID,
 	})
 	if err != nil {
@@ -855,7 +855,7 @@ func (uh *UserHandler) RemoveRoleHandler(c *gin.Context) {
 
 	// Remove the role
 	err = uh.queries.RemoveRole(c.Request.Context(), db.RemoveRoleParams{
-		UserID: int32(userID),
+		UserID: int64(userID),
 		RoleID: role.ID,
 	})
 	if err != nil {
@@ -898,7 +898,7 @@ func (uh *UserHandler) ResetUserPasswordHandler(c *gin.Context) {
 	// Note: We don't have a specific UpdatePassword query, we can use UpdateUser or add a new one.
 	// For now, I'll just use a direct EXEC if I don't want to create a new sqlc query.
 	// But wait, it's better to add one to users.sql.
-	_, err = uh.conn.ExecContext(c.Request.Context(), "UPDATE users SET password = $2 WHERE id = $1", int32(userID), string(hashedPassword))
+	_, err = uh.conn.ExecContext(c.Request.Context(), "UPDATE users SET password = $2 WHERE id = $1", int64(userID), string(hashedPassword))
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to reset password"})

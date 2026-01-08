@@ -10,13 +10,35 @@ import (
 	"database/sql"
 )
 
+const countPublicMedia = `-- name: CountPublicMedia :one
+SELECT COUNT(*) FROM media
+WHERE deleted_at IS NULL
+`
+
+func (q *Queries) CountPublicMedia(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countPublicMedia)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createMedia = `-- name: CreateMedia :one
 INSERT INTO media (
-    filename, stored_name, url, type, mime_type, size, user_id
+    filename, stored_name, url, type, mime_type, size, user_id,
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
-RETURNING id, filename, stored_name, url, type, mime_type, size, user_id, created_at, updated_at, deleted_at
+RETURNING 
+    id, filename, stored_name, url, 
+    COALESCE(type, '') as type, 
+    COALESCE(mime_type, '') as mime_type, 
+    size, user_id, 
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 `
 
 type CreateMediaParams struct {
@@ -26,10 +48,24 @@ type CreateMediaParams struct {
 	Type       sql.NullString `json:"type"`
 	MimeType   sql.NullString `json:"mime_type"`
 	Size       int64          `json:"size"`
-	UserID     int32          `json:"user_id"`
+	UserID     int64          `json:"user_id"`
 }
 
-func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Medium, error) {
+type CreateMediaRow struct {
+	ID         int64        `json:"id"`
+	Filename   string       `json:"filename"`
+	StoredName string       `json:"stored_name"`
+	Url        string       `json:"url"`
+	Type       string       `json:"type"`
+	MimeType   string       `json:"mime_type"`
+	Size       int64        `json:"size"`
+	UserID     int64        `json:"user_id"`
+	CreatedAt  int64        `json:"created_at"`
+	UpdatedAt  int64        `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+}
+
+func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (CreateMediaRow, error) {
 	row := q.db.QueryRowContext(ctx, createMedia,
 		arg.Filename,
 		arg.StoredName,
@@ -39,7 +75,7 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Mediu
 		arg.Size,
 		arg.UserID,
 	)
-	var i Medium
+	var i CreateMediaRow
 	err := row.Scan(
 		&i.ID,
 		&i.Filename,
@@ -57,14 +93,36 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Mediu
 }
 
 const getMediaByID = `-- name: GetMediaByID :one
-SELECT id, filename, stored_name, url, type, mime_type, size, user_id, created_at, updated_at, deleted_at FROM media
+SELECT 
+    id, filename, stored_name, url, 
+    COALESCE(type, '') as type, 
+    COALESCE(mime_type, '') as mime_type, 
+    size, user_id, 
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
+FROM media
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
 
-func (q *Queries) GetMediaByID(ctx context.Context, id int32) (Medium, error) {
+type GetMediaByIDRow struct {
+	ID         int64        `json:"id"`
+	Filename   string       `json:"filename"`
+	StoredName string       `json:"stored_name"`
+	Url        string       `json:"url"`
+	Type       string       `json:"type"`
+	MimeType   string       `json:"mime_type"`
+	Size       int64        `json:"size"`
+	UserID     int64        `json:"user_id"`
+	CreatedAt  int64        `json:"created_at"`
+	UpdatedAt  int64        `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+}
+
+func (q *Queries) GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getMediaByID, id)
-	var i Medium
+	var i GetMediaByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Filename,
@@ -82,30 +140,44 @@ func (q *Queries) GetMediaByID(ctx context.Context, id int32) (Medium, error) {
 }
 
 const listPublicMedia = `-- name: ListPublicMedia :many
-SELECT m.id, m.filename, m.stored_name, m.url, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at, u.name as user_name
+SELECT 
+    m.id, m.filename, m.stored_name, m.url, 
+    COALESCE(m.type, '') as type, 
+    COALESCE(m.mime_type, '') as mime_type, 
+    m.size, m.user_id, 
+    COALESCE(m.created_at, 0)::BIGINT as created_at, 
+    COALESCE(m.updated_at, 0)::BIGINT as updated_at, 
+    m.deleted_at,
+    u.name as user_name
 FROM media m
 JOIN users u ON m.user_id = u.id
 WHERE m.deleted_at IS NULL
 ORDER BY m.created_at DESC
+LIMIT $1 OFFSET $2
 `
 
-type ListPublicMediaRow struct {
-	ID         int32          `json:"id"`
-	Filename   string         `json:"filename"`
-	StoredName string         `json:"stored_name"`
-	Url        string         `json:"url"`
-	Type       sql.NullString `json:"type"`
-	MimeType   sql.NullString `json:"mime_type"`
-	Size       int64          `json:"size"`
-	UserID     int32          `json:"user_id"`
-	CreatedAt  int64          `json:"created_at"`
-	UpdatedAt  int64          `json:"updated_at"`
-	DeletedAt  sql.NullTime   `json:"deleted_at"`
-	UserName   string         `json:"user_name"`
+type ListPublicMediaParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListPublicMedia(ctx context.Context) ([]ListPublicMediaRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPublicMedia)
+type ListPublicMediaRow struct {
+	ID         int64        `json:"id"`
+	Filename   string       `json:"filename"`
+	StoredName string       `json:"stored_name"`
+	Url        string       `json:"url"`
+	Type       string       `json:"type"`
+	MimeType   string       `json:"mime_type"`
+	Size       int64        `json:"size"`
+	UserID     int64        `json:"user_id"`
+	CreatedAt  int64        `json:"created_at"`
+	UpdatedAt  int64        `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+	UserName   string       `json:"user_name"`
+}
+
+func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams) ([]ListPublicMediaRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPublicMedia, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -141,20 +213,42 @@ func (q *Queries) ListPublicMedia(ctx context.Context) ([]ListPublicMediaRow, er
 }
 
 const listUserMedia = `-- name: ListUserMedia :many
-SELECT id, filename, stored_name, url, type, mime_type, size, user_id, created_at, updated_at, deleted_at FROM media
+SELECT 
+    id, filename, stored_name, url, 
+    COALESCE(type, '') as type, 
+    COALESCE(mime_type, '') as mime_type, 
+    size, user_id, 
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
+FROM media
 WHERE user_id = $1 AND deleted_at IS NULL
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListUserMedia(ctx context.Context, userID int32) ([]Medium, error) {
+type ListUserMediaRow struct {
+	ID         int64        `json:"id"`
+	Filename   string       `json:"filename"`
+	StoredName string       `json:"stored_name"`
+	Url        string       `json:"url"`
+	Type       string       `json:"type"`
+	MimeType   string       `json:"mime_type"`
+	Size       int64        `json:"size"`
+	UserID     int64        `json:"user_id"`
+	CreatedAt  int64        `json:"created_at"`
+	UpdatedAt  int64        `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+}
+
+func (q *Queries) ListUserMedia(ctx context.Context, userID int64) ([]ListUserMediaRow, error) {
 	rows, err := q.db.QueryContext(ctx, listUserMedia, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Medium
+	var items []ListUserMediaRow
 	for rows.Next() {
-		var i Medium
+		var i ListUserMediaRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Filename,
@@ -181,13 +275,23 @@ func (q *Queries) ListUserMedia(ctx context.Context, userID int32) ([]Medium, er
 	return items, nil
 }
 
+const permanentlyDeleteMedia = `-- name: PermanentlyDeleteMedia :exec
+DELETE FROM media
+WHERE id = $1
+`
+
+func (q *Queries) PermanentlyDeleteMedia(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, permanentlyDeleteMedia, id)
+	return err
+}
+
 const softDeleteMedia = `-- name: SoftDeleteMedia :exec
 UPDATE media
 SET deleted_at = NOW()
 WHERE id = $1
 `
 
-func (q *Queries) SoftDeleteMedia(ctx context.Context, id int32) error {
+func (q *Queries) SoftDeleteMedia(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, softDeleteMedia, id)
 	return err
 }
@@ -199,20 +303,41 @@ SET
     type = $3,
     mime_type = $4,
     size = $5,
-    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
-RETURNING id, filename, stored_name, url, type, mime_type, size, user_id, created_at, updated_at, deleted_at
+RETURNING 
+    id, filename, stored_name, url, 
+    COALESCE(type, '') as type, 
+    COALESCE(mime_type, '') as mime_type, 
+    size, user_id, 
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 `
 
 type UpdateMediaParams struct {
-	ID       int32          `json:"id"`
+	ID       int64          `json:"id"`
 	Filename string         `json:"filename"`
 	Type     sql.NullString `json:"type"`
 	MimeType sql.NullString `json:"mime_type"`
 	Size     int64          `json:"size"`
 }
 
-func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) (Medium, error) {
+type UpdateMediaRow struct {
+	ID         int64        `json:"id"`
+	Filename   string       `json:"filename"`
+	StoredName string       `json:"stored_name"`
+	Url        string       `json:"url"`
+	Type       string       `json:"type"`
+	MimeType   string       `json:"mime_type"`
+	Size       int64        `json:"size"`
+	UserID     int64        `json:"user_id"`
+	CreatedAt  int64        `json:"created_at"`
+	UpdatedAt  int64        `json:"updated_at"`
+	DeletedAt  sql.NullTime `json:"deleted_at"`
+}
+
+func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) (UpdateMediaRow, error) {
 	row := q.db.QueryRowContext(ctx, updateMedia,
 		arg.ID,
 		arg.Filename,
@@ -220,7 +345,7 @@ func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) (Mediu
 		arg.MimeType,
 		arg.Size,
 	)
-	var i Medium
+	var i UpdateMediaRow
 	err := row.Scan(
 		&i.ID,
 		&i.Filename,

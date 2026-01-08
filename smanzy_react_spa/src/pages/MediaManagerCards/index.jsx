@@ -243,6 +243,7 @@ export default function MediaManagerCards() {
                             <MediaCard
                                 key={media.id}
                                 media={media}
+                                onDelete={(m) => deleteMutation.mutate(m.id)}
                                 canManage={canManage(media)}
                                 canView={canView(media)}
                             />

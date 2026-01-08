@@ -27,7 +27,7 @@ func TestServeFileHandler_ServesFile(t *testing.T) {
 		t.Fatalf("failed to write test file: %v", err)
 	}
 
-	mh := NewMediaHandler(nil)
+	mh := NewMediaHandler(nil, nil)
 	mh.uploadDir = tmpDir
 
 	// Set up router
@@ -53,7 +53,7 @@ func TestServeFileHandler_ServesFile(t *testing.T) {
 }
 
 func TestServeFileHandler_InvalidFilename(t *testing.T) {
-	mh := NewMediaHandler(nil)
+	mh := NewMediaHandler(nil, nil)
 
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
