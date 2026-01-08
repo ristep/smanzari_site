@@ -8,6 +8,7 @@ import clsx from 'clsx';
 
 export default function MediaCard({
     media,
+    onDelete,
     canManage = false,
     canView = true,
 }) {
@@ -25,7 +26,9 @@ export default function MediaCard({
         if (
             window.confirm(`Are you sure you want to delete "${media.filename}"?`)
         ) {
-            deleteMutation.mutate(media.id);
+            if (onDelete) {
+                onDelete(media);
+            }
         }
     };
 

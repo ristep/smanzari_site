@@ -80,7 +80,7 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 		Type:       sql.NullString{String: "file", Valid: true},
 		MimeType:   sql.NullString{String: file.Header.Get("Content-Type"), Valid: true},
 		Size:       file.Size,
-		UserID:     int32(user.ID),
+		UserID:     int64(user.ID),
 	})
 
 	if err != nil {
@@ -96,8 +96,8 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 		Filename:   mediaRow.Filename,
 		StoredName: mediaRow.StoredName,
 		URL:        mediaRow.Url,
-		Type:       mediaRow.Type.String,
-		MimeType:   mediaRow.MimeType.String,
+		Type:       mediaRow.Type,
+		MimeType:   mediaRow.MimeType,
 		Size:       mediaRow.Size,
 		UserID:     uint(mediaRow.UserID),
 		UserName:   user.Name,
@@ -111,13 +111,13 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 // GetMediaHandler downloads/streams the file
 func (mh *MediaHandler) GetMediaHandler(c *gin.Context) {
 	mediaIDStr := c.Param("id")
-	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 32)
+	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid ID"})
 		return
 	}
 
-	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int32(mediaID))
+	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int64(mediaID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
@@ -134,13 +134,13 @@ func (mh *MediaHandler) GetMediaHandler(c *gin.Context) {
 // GetMediaDetailsHandler returns media metadata
 func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 	mediaIDStr := c.Param("id")
-	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 32)
+	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid ID"})
 		return
 	}
 
-	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int32(mediaID))
+	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int64(mediaID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
@@ -158,8 +158,8 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 		Filename:   mediaRow.Filename,
 		StoredName: mediaRow.StoredName,
 		URL:        mediaRow.Url,
-		Type:       mediaRow.Type.String,
-		MimeType:   mediaRow.MimeType.String,
+		Type:       mediaRow.Type,
+		MimeType:   mediaRow.MimeType,
 		Size:       mediaRow.Size,
 		UserID:     uint(mediaRow.UserID),
 		UserName:   userRow.Name,
@@ -196,13 +196,28 @@ func (mh *MediaHandler) ServeFileHandler(c *gin.Context) {
 
 // ListPublicMediasHandler returns a paginated list of medias for public consumption
 func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
-	// Note: We'll skip formal pagination for now as current queries don't support limit/offset directly
-	// unless we add them to the sqlc query.
-	mediaRows, err := mh.queries.ListPublicMedia(c.Request.Context())
+	limitStr := c.DefaultQuery("limit", "10")
+	offsetStr := c.DefaultQuery("offset", "0")
+
+	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error"})
+		limit = 10
+	}
+	offset, err := strconv.Atoi(offsetStr)
+	if err != nil {
+		offset = 0
+	}
+
+	mediaRows, err := mh.queries.ListPublicMedia(c.Request.Context(), db.ListPublicMediaParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Database error fetching media"})
 		return
 	}
+
+	total, _ := mh.queries.CountPublicMedia(c.Request.Context())
 
 	var medias []models.Media
 	for _, row := range mediaRows {
@@ -211,8 +226,8 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 			Filename:   row.Filename,
 			StoredName: row.StoredName,
 			URL:        row.Url,
-			Type:       row.Type.String,
-			MimeType:   row.MimeType.String,
+			Type:       row.Type,
+			MimeType:   row.MimeType,
 			Size:       row.Size,
 			UserID:     uint(row.UserID),
 			UserName:   row.UserName,
@@ -222,8 +237,10 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, SuccessResponse{Data: map[string]interface{}{
-		"files": medias,
-		"total": len(medias), // Simplified
+		"files":  medias,
+		"total":  total,
+		"limit":  limit,
+		"offset": offset,
 	}})
 }
 
@@ -235,7 +252,7 @@ type UpdateMediaRequest struct {
 // UpdateMediaHandler updates media metadata and optionally replaces the file
 func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 	mediaIDStr := c.Param("id")
-	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 32)
+	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid ID"})
 		return
@@ -249,7 +266,7 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 	}
 	user := authUser.(*models.User)
 
-	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int32(mediaID))
+	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int64(mediaID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
@@ -260,7 +277,7 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 	}
 
 	// Access Control: Owner or Admin
-	if uint32(mediaRow.UserID) != uint32(user.ID) && !user.HasRole("admin") {
+	if uint64(mediaRow.UserID) != uint64(user.ID) && !user.HasRole("admin") {
 		c.JSON(http.StatusForbidden, ErrorResponse{Error: "Forbidden"})
 		return
 	}
@@ -312,8 +329,8 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 	updatedRow, err := mh.queries.UpdateMedia(c.Request.Context(), db.UpdateMediaParams{
 		ID:       mediaRow.ID,
 		Filename: newFilename,
-		Type:     mediaRow.Type,
-		MimeType: mediaRow.MimeType,
+		Type:     sql.NullString{String: mediaRow.Type, Valid: true},
+		MimeType: sql.NullString{String: mediaRow.MimeType, Valid: true},
 		Size:     mediaRow.Size,
 	})
 
@@ -328,7 +345,7 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 // DeleteMediaHandler deletes media file and record
 func (mh *MediaHandler) DeleteMediaHandler(c *gin.Context) {
 	mediaIDStr := c.Param("id")
-	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 32)
+	mediaID, err := strconv.ParseInt(mediaIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid ID"})
 		return
@@ -342,7 +359,7 @@ func (mh *MediaHandler) DeleteMediaHandler(c *gin.Context) {
 	}
 	user := authUser.(*models.User)
 
-	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int32(mediaID))
+	mediaRow, err := mh.queries.GetMediaByID(c.Request.Context(), int64(mediaID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, ErrorResponse{Error: "Media not found"})
@@ -353,7 +370,7 @@ func (mh *MediaHandler) DeleteMediaHandler(c *gin.Context) {
 	}
 
 	// Access Control: Owner or Admin
-	if uint32(mediaRow.UserID) != uint32(user.ID) && !user.HasRole("admin") {
+	if uint64(mediaRow.UserID) != uint64(user.ID) && !user.HasRole("admin") {
 		c.JSON(http.StatusForbidden, ErrorResponse{Error: "Forbidden"})
 		return
 	}
@@ -362,10 +379,10 @@ func (mh *MediaHandler) DeleteMediaHandler(c *gin.Context) {
 	filePath := filepath.Join(mh.uploadDir, mediaRow.StoredName)
 	_ = os.Remove(filePath)
 
-	// Delete from DB (Pure SQL)
-	_, err = mh.conn.ExecContext(c.Request.Context(), "DELETE FROM media WHERE id = $1", int32(mediaID))
+	// Delete from DB (Hard delete since we also removed the file)
+	err = mh.queries.PermanentlyDeleteMedia(c.Request.Context(), int64(mediaID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete media record"})
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Failed to delete media record: " + err.Error()})
 		return
 	}
 

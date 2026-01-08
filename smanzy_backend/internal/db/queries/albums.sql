@@ -1,10 +1,13 @@
 -- name: CreateAlbum :one
 INSERT INTO album (
-    title, description, user_id, is_public, is_shared
+    title, description, user_id, is_public, is_shared,
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
-RETURNING *;
+RETURNING id, title, description, user_id, is_public, is_shared, created_at, updated_at, deleted_at;
 
 -- name: GetAlbumByID :one
 SELECT * FROM album
@@ -32,9 +35,9 @@ SET
     description = $3,
     is_public = $4,
     is_shared = $5,
-    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
-RETURNING *;
+RETURNING id, title, description, user_id, is_public, is_shared, created_at, updated_at, deleted_at;
 
 -- name: SoftDeleteAlbum :exec
 UPDATE album

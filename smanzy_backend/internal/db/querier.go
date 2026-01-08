@@ -11,35 +11,37 @@ import (
 type Querier interface {
 	AddMediaToAlbum(ctx context.Context, arg AddMediaToAlbumParams) error
 	AssignRole(ctx context.Context, arg AssignRoleParams) error
+	CountPublicMedia(ctx context.Context) (int64, error)
 	CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album, error)
-	CreateMedia(ctx context.Context, arg CreateMediaParams) (Medium, error)
+	CreateMedia(ctx context.Context, arg CreateMediaParams) (CreateMediaRow, error)
 	CreateRole(ctx context.Context, name string) (Role, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateVideo(ctx context.Context, arg CreateVideoParams) (Video, error)
-	GetAlbumByID(ctx context.Context, id int32) (Album, error)
-	GetAlbumMedia(ctx context.Context, albumID int32) ([]Medium, error)
-	GetMediaByID(ctx context.Context, id int32) (Medium, error)
+	GetAlbumByID(ctx context.Context, id int64) (Album, error)
+	GetAlbumMedia(ctx context.Context, albumID int64) ([]Medium, error)
+	GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, error)
 	GetRoleByName(ctx context.Context, name string) (Role, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByEmailWithDeleted(ctx context.Context, email string) (GetUserByEmailWithDeletedRow, error)
-	GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, error)
-	GetUserRoles(ctx context.Context, userID int32) ([]Role, error)
-	GetVideoByID(ctx context.Context, id int32) (Video, error)
+	GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error)
+	GetUserRoles(ctx context.Context, userID int64) ([]Role, error)
+	GetVideoByID(ctx context.Context, id int64) (Video, error)
 	ListAllAlbums(ctx context.Context) ([]ListAllAlbumsRow, error)
-	ListPublicMedia(ctx context.Context) ([]ListPublicMediaRow, error)
-	ListUserAlbums(ctx context.Context, userID int32) ([]ListUserAlbumsRow, error)
-	ListUserMedia(ctx context.Context, userID int32) ([]Medium, error)
+	ListPublicMedia(ctx context.Context, arg ListPublicMediaParams) ([]ListPublicMediaRow, error)
+	ListUserAlbums(ctx context.Context, userID int64) ([]ListUserAlbumsRow, error)
+	ListUserMedia(ctx context.Context, userID int64) ([]ListUserMediaRow, error)
 	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	ListVideos(ctx context.Context, arg ListVideosParams) ([]Video, error)
+	PermanentlyDeleteMedia(ctx context.Context, id int64) error
 	RemoveMediaFromAlbum(ctx context.Context, arg RemoveMediaFromAlbumParams) error
 	RemoveRole(ctx context.Context, arg RemoveRoleParams) error
-	RestoreUser(ctx context.Context, id int32) error
-	SoftDeleteAlbum(ctx context.Context, id int32) error
-	SoftDeleteMedia(ctx context.Context, id int32) error
-	SoftDeleteUser(ctx context.Context, id int32) error
-	SoftDeleteVideo(ctx context.Context, id int32) error
+	RestoreUser(ctx context.Context, id int64) error
+	SoftDeleteAlbum(ctx context.Context, id int64) error
+	SoftDeleteMedia(ctx context.Context, id int64) error
+	SoftDeleteUser(ctx context.Context, id int64) error
+	SoftDeleteVideo(ctx context.Context, id int64) error
 	UpdateAlbum(ctx context.Context, arg UpdateAlbumParams) (Album, error)
-	UpdateMedia(ctx context.Context, arg UpdateMediaParams) (Medium, error)
+	UpdateMedia(ctx context.Context, arg UpdateMediaParams) (UpdateMediaRow, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
 

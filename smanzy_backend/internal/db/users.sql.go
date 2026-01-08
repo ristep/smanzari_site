@@ -17,8 +17,8 @@ ON CONFLICT DO NOTHING
 `
 
 type AssignRoleParams struct {
-	UserID int32 `json:"user_id"`
-	RoleID int32 `json:"role_id"`
+	UserID int64 `json:"user_id"`
+	RoleID int64 `json:"role_id"`
 }
 
 func (q *Queries) AssignRole(ctx context.Context, arg AssignRoleParams) error {
@@ -47,20 +47,25 @@ func (q *Queries) CreateRole(ctx context.Context, name string) (Role, error) {
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-    email, password, name, tel, age, address, city, country, gender
+    email, password, name, tel, age, address, city, country, gender,
+    created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
+    (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
 RETURNING 
     id, email, password, name, 
     COALESCE(tel, '') as tel, 
-    COALESCE(age, 0) as age, 
+    COALESCE(age, 0)::BIGINT as age, 
     COALESCE(address, '') as address, 
     COALESCE(city, '') as city, 
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 `
 
 type CreateUserParams struct {
@@ -68,7 +73,7 @@ type CreateUserParams struct {
 	Password string         `json:"password"`
 	Name     string         `json:"name"`
 	Tel      sql.NullString `json:"tel"`
-	Age      sql.NullInt32  `json:"age"`
+	Age      sql.NullInt64  `json:"age"`
 	Address  sql.NullString `json:"address"`
 	City     sql.NullString `json:"city"`
 	Country  sql.NullString `json:"country"`
@@ -76,12 +81,12 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`
@@ -152,19 +157,21 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE email = $1 AND deleted_at IS NULL
 LIMIT 1
 `
 
 type GetUserByEmailRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`
@@ -207,19 +214,21 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE email = $1
 LIMIT 1
 `
 
 type GetUserByEmailWithDeletedRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`
@@ -262,19 +271,21 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE id = $1 AND deleted_at IS NULL
 LIMIT 1
 `
 
 type GetUserByIDRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`
@@ -285,7 +296,7 @@ type GetUserByIDRow struct {
 	DeletedAt     sql.NullTime `json:"deleted_at"`
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id int32) (GetUserByIDRow, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id int64) (GetUserByIDRow, error) {
 	row := q.db.QueryRowContext(ctx, getUserByID, id)
 	var i GetUserByIDRow
 	err := row.Scan(
@@ -313,7 +324,7 @@ JOIN user_roles ur ON ur.role_id = r.id
 WHERE ur.user_id = $1
 `
 
-func (q *Queries) GetUserRoles(ctx context.Context, userID int32) ([]Role, error) {
+func (q *Queries) GetUserRoles(ctx context.Context, userID int64) ([]Role, error) {
 	rows, err := q.db.QueryContext(ctx, getUserRoles, userID)
 	if err != nil {
 		return nil, err
@@ -351,19 +362,21 @@ SELECT
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 FROM users
 WHERE deleted_at IS NULL
 ORDER BY id
 `
 
 type ListUsersRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`
@@ -418,8 +431,8 @@ WHERE user_id = $1 AND role_id = $2
 `
 
 type RemoveRoleParams struct {
-	UserID int32 `json:"user_id"`
-	RoleID int32 `json:"role_id"`
+	UserID int64 `json:"user_id"`
+	RoleID int64 `json:"role_id"`
 }
 
 func (q *Queries) RemoveRole(ctx context.Context, arg RemoveRoleParams) error {
@@ -433,7 +446,7 @@ SET deleted_at = NULL
 WHERE id = $1
 `
 
-func (q *Queries) RestoreUser(ctx context.Context, id int32) error {
+func (q *Queries) RestoreUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, restoreUser, id)
 	return err
 }
@@ -444,7 +457,7 @@ SET deleted_at = NOW()
 WHERE id = $1
 `
 
-func (q *Queries) SoftDeleteUser(ctx context.Context, id int32) error {
+func (q *Queries) SoftDeleteUser(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, softDeleteUser, id)
 	return err
 }
@@ -459,25 +472,27 @@ SET
     city = $6,
     country = $7,
     gender = $8,
-    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)
+    updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
 RETURNING 
     id, email, password, name, 
     COALESCE(tel, '') as tel, 
-    COALESCE(age, 0) as age, 
+    COALESCE(age, 0)::BIGINT as age, 
     COALESCE(address, '') as address, 
     COALESCE(city, '') as city, 
     COALESCE(country, '') as country, 
     COALESCE(gender, '') as gender, 
     COALESCE(email_verified, false) as email_verified,
-    created_at, updated_at, deleted_at
+    COALESCE(created_at, 0)::BIGINT as created_at, 
+    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+    deleted_at
 `
 
 type UpdateUserParams struct {
-	ID      int32          `json:"id"`
+	ID      int64          `json:"id"`
 	Name    string         `json:"name"`
 	Tel     sql.NullString `json:"tel"`
-	Age     sql.NullInt32  `json:"age"`
+	Age     sql.NullInt64  `json:"age"`
 	Address sql.NullString `json:"address"`
 	City    sql.NullString `json:"city"`
 	Country sql.NullString `json:"country"`
@@ -485,12 +500,12 @@ type UpdateUserParams struct {
 }
 
 type UpdateUserRow struct {
-	ID            int32        `json:"id"`
+	ID            int64        `json:"id"`
 	Email         string       `json:"email"`
 	Password      string       `json:"password"`
 	Name          string       `json:"name"`
 	Tel           string       `json:"tel"`
-	Age           int32        `json:"age"`
+	Age           int64        `json:"age"`
 	Address       string       `json:"address"`
 	City          string       `json:"city"`
 	Country       string       `json:"country"`

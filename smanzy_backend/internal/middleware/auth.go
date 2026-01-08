@@ -43,7 +43,7 @@ func AuthMiddleware(jwtService *auth.JWTService, queries *db.Queries) gin.Handle
 		}
 
 		// Fetch the user from the database
-		userRow, err := queries.GetUserByID(c.Request.Context(), int32(claims.UserID))
+		userRow, err := queries.GetUserByID(c.Request.Context(), int64(claims.UserID))
 		if err != nil {
 			if err == sql.ErrNoRows {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
