@@ -1,13 +1,14 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ristep/smanzy_backend/internal/db"
 	"github.com/ristep/smanzy_backend/internal/models"
 	"github.com/ristep/smanzy_backend/internal/services"
-	"gorm.io/gorm"
 )
 
 // AlbumHandler handles album-related HTTP requests
@@ -16,9 +17,9 @@ type AlbumHandler struct {
 }
 
 // NewAlbumHandler creates a new album handler
-func NewAlbumHandler(db *gorm.DB) *AlbumHandler {
+func NewAlbumHandler(conn *sql.DB, queries *db.Queries) *AlbumHandler {
 	return &AlbumHandler{
-		albumService: services.NewAlbumService(db),
+		albumService: services.NewAlbumService(conn, queries),
 	}
 }
 

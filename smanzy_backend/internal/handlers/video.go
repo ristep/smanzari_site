@@ -1,26 +1,29 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
+	"github.com/ristep/smanzy_backend/internal/db"
 	"github.com/ristep/smanzy_backend/internal/models"
 	"github.com/ristep/smanzy_backend/internal/services"
 )
 
 // VideoHandler handles video-related requests
 type VideoHandler struct {
-	DB             *gorm.DB
+	conn           *sql.DB
+	queries        *db.Queries
 	YouTubeService *services.YouTubeService
 }
 
 // NewVideoHandler creates a new video handler
-func NewVideoHandler(db *gorm.DB, youtubeService *services.YouTubeService) *VideoHandler {
+func NewVideoHandler(conn *sql.DB, queries *db.Queries, youtubeService *services.YouTubeService) *VideoHandler {
 	return &VideoHandler{
-		DB:             db,
+		conn:           conn,
+		queries:        queries,
 		YouTubeService: youtubeService,
 	}
 }
@@ -48,19 +51,38 @@ func (h *VideoHandler) ListVideosHandler(c *gin.Context) {
 
 	offset := (page - 1) * limit
 
-	var videos []models.Video
-	var total int64
-
 	// Get total count
-	if err := h.DB.Model(&models.Video{}).Count(&total).Error; err != nil {
+	var total int64
+	err := h.conn.QueryRowContext(c.Request.Context(), "SELECT COUNT(*) FROM videos").Scan(&total)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count videos"})
 		return
 	}
 
-	// Get paginated videos, ordered by published date (newest first)
-	if err := h.DB.Order("published_at DESC").Limit(limit).Offset(offset).Find(&videos).Error; err != nil {
+	// Get paginated videos
+	videoRows, err := h.queries.ListVideos(c.Request.Context(), db.ListVideosParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	})
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch videos"})
 		return
+	}
+
+	var videos []models.Video
+	for _, row := range videoRows {
+		videos = append(videos, models.Video{
+			ID:           uint(row.ID),
+			VideoID:      row.VideoID,
+			Title:        row.Title,
+			Description:  row.Description.String,
+			PublishedAt:  row.PublishedAt.Time,
+			Views:        row.Views.Int64,
+			Likes:        row.Likes.Int64,
+			ThumbnailURL: row.ThumbnailUrl.String,
+			CreatedAt:    row.CreatedAt,
+			UpdatedAt:    row.UpdatedAt,
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -80,11 +102,16 @@ func (h *VideoHandler) ListVideosHandler(c *gin.Context) {
 // @Success 200 {object} models.Video
 // @Router /api/videos/{id} [get]
 func (h *VideoHandler) GetVideoHandler(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.ParseInt(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 
-	var video models.Video
-	if err := h.DB.First(&video, id).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+	row, err := h.queries.GetVideoByID(c.Request.Context(), int32(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Video not found"})
 			return
 		}
@@ -92,7 +119,20 @@ func (h *VideoHandler) GetVideoHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, video)
+	apiVideo := models.Video{
+		ID:           uint(row.ID),
+		VideoID:      row.VideoID,
+		Title:        row.Title,
+		Description:  row.Description.String,
+		PublishedAt:  row.PublishedAt.Time,
+		Views:        row.Views.Int64,
+		Likes:        row.Likes.Int64,
+		ThumbnailURL: row.ThumbnailUrl.String,
+		CreatedAt:    row.CreatedAt,
+		UpdatedAt:    row.UpdatedAt,
+	}
+
+	c.JSON(http.StatusOK, apiVideo)
 }
 
 // SyncVideosHandler fetches videos from YouTube and updates the database
@@ -121,37 +161,20 @@ func (h *VideoHandler) SyncVideosHandler(c *gin.Context) {
 	}
 
 	// Update or create videos in database
-	var created, updated int
-	for _, video := range videos {
-		var existing models.Video
-		result := h.DB.Where("video_id = ?", video.VideoID).First(&existing)
-
-		if result.Error == gorm.ErrRecordNotFound {
-			// Create new video
-			if err := h.DB.Create(&video).Error; err != nil {
-				continue // Skip this video if creation fails
-			}
-			created++
-		} else if result.Error == nil {
-			// Update existing video
-			existing.Title = video.Title
-			existing.Description = video.Description
-			existing.Views = video.Views
-			existing.Likes = video.Likes
-			existing.ThumbnailURL = video.ThumbnailURL
-
-			if err := h.DB.Save(&existing).Error; err != nil {
-				continue // Skip this video if update fails
-			}
-			updated++
-		}
+	for _, v := range videos {
+		_, _ = h.queries.CreateVideo(c.Request.Context(), db.CreateVideoParams{
+			VideoID:      v.VideoID,
+			Title:        v.Title,
+			Description:  sql.NullString{String: v.Description, Valid: true},
+			PublishedAt:  sql.NullTime{Time: v.PublishedAt, Valid: true},
+			Views:        sql.NullInt64{Int64: v.Views, Valid: true},
+			Likes:        sql.NullInt64{Int64: v.Likes, Valid: true},
+			ThumbnailUrl: sql.NullString{String: v.ThumbnailURL, Valid: true},
+		})
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "Videos synced successfully",
-		"fetched":     len(videos),
-		"created":     created,
-		"updated":     updated,
-		"total_in_db": created + updated,
+		"message": "Videos synced successfully",
+		"fetched": len(videos),
 	})
 }
