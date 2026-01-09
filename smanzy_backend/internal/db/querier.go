@@ -11,18 +11,15 @@ import (
 type Querier interface {
 	AddMediaToAlbum(ctx context.Context, arg AddMediaToAlbumParams) error
 	AssignRole(ctx context.Context, arg AssignRoleParams) error
-	CountMuvi(ctx context.Context) (int64, error)
 	CountPublicMedia(ctx context.Context) (int64, error)
 	CreateAlbum(ctx context.Context, arg CreateAlbumParams) (Album, error)
 	CreateMedia(ctx context.Context, arg CreateMediaParams) (CreateMediaRow, error)
 	CreateRole(ctx context.Context, name string) (Role, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	CreateVideo(ctx context.Context, arg CreateVideoParams) (Video, error)
-	DeleteMuvi(ctx context.Context, id int32) error
 	GetAlbumByID(ctx context.Context, id int64) (Album, error)
 	GetAlbumMedia(ctx context.Context, albumID int64) ([]Medium, error)
 	GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, error)
-	GetMuviByID(ctx context.Context, id int32) (Muvi, error)
 	GetRoleByName(ctx context.Context, name string) (Role, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByEmailWithDeleted(ctx context.Context, email string) (GetUserByEmailWithDeletedRow, error)
@@ -30,7 +27,6 @@ type Querier interface {
 	GetUserRoles(ctx context.Context, userID int64) ([]Role, error)
 	GetVideoByID(ctx context.Context, id int64) (Video, error)
 	ListAllAlbums(ctx context.Context) ([]ListAllAlbumsRow, error)
-	ListMuvi(ctx context.Context) ([]Muvi, error)
 	ListPublicMedia(ctx context.Context, arg ListPublicMediaParams) ([]ListPublicMediaRow, error)
 	ListUserAlbums(ctx context.Context, userID int64) ([]ListUserAlbumsRow, error)
 	ListUserMedia(ctx context.Context, userID int64) ([]ListUserMediaRow, error)
@@ -46,7 +42,6 @@ type Querier interface {
 	SoftDeleteVideo(ctx context.Context, id int64) error
 	UpdateAlbum(ctx context.Context, arg UpdateAlbumParams) (Album, error)
 	UpdateMedia(ctx context.Context, arg UpdateMediaParams) (UpdateMediaRow, error)
-	UpdateMuvi(ctx context.Context, arg UpdateMuviParams) error
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (UpdateUserRow, error)
 }
 

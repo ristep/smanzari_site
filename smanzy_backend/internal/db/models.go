@@ -39,20 +39,6 @@ type Medium struct {
 	DeletedAt  sql.NullTime   `json:"deleted_at"`
 }
 
-type Muvi struct {
-	ID          int32          `json:"id"`
-	Name        string         `json:"name"`
-	Description sql.NullString `json:"description"`
-	CreatedAt   int64          `json:"created_at"`
-	UpdatedAt   int64          `json:"updated_at"`
-	DeletedAt   sql.NullTime   `json:"deleted_at"`
-}
-
-type MuviMedium struct {
-	MuviID  int32 `json:"muvi_id"`
-	MediaID int32 `json:"media_id"`
-}
-
 type Role struct {
 	ID        int64  `json:"id"`
 	Name      string `json:"name"`
