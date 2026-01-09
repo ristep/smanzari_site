@@ -31,13 +31,13 @@ INSERT INTO media (
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
-RETURNING 
-    id, filename, stored_name, url, 
-    COALESCE(type, '') as type, 
-    COALESCE(mime_type, '') as mime_type, 
-    size, user_id, 
-    COALESCE(created_at, 0)::BIGINT as created_at, 
-    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+RETURNING
+    id, filename, stored_name, url,
+    COALESCE(type, '') as type,
+    COALESCE(mime_type, '') as mime_type,
+    size, user_id,
+    COALESCE(created_at, 0)::BIGINT as created_at,
+    COALESCE(updated_at, 0)::BIGINT as updated_at,
     deleted_at
 `
 
@@ -93,13 +93,13 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Creat
 }
 
 const getMediaByID = `-- name: GetMediaByID :one
-SELECT 
-    id, filename, stored_name, url, 
-    COALESCE(type, '') as type, 
-    COALESCE(mime_type, '') as mime_type, 
-    size, user_id, 
-    COALESCE(created_at, 0)::BIGINT as created_at, 
-    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+SELECT
+    id, filename, stored_name, url,
+    COALESCE(type, '') as type,
+    COALESCE(mime_type, '') as mime_type,
+    size, user_id,
+    COALESCE(created_at, 0)::BIGINT as created_at,
+    COALESCE(updated_at, 0)::BIGINT as updated_at,
     deleted_at
 FROM media
 WHERE id = $1 AND deleted_at IS NULL
@@ -140,15 +140,17 @@ func (q *Queries) GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, 
 }
 
 const listPublicMedia = `-- name: ListPublicMedia :many
-SELECT 
-    m.id, m.filename, m.stored_name, m.url, 
-    COALESCE(m.type, '') as type, 
-    COALESCE(m.mime_type, '') as mime_type, 
-    m.size, m.user_id, 
-    COALESCE(m.created_at, 0)::BIGINT as created_at, 
-    COALESCE(m.updated_at, 0)::BIGINT as updated_at, 
+SELECT
+    m.id, m.filename, m.stored_name, m.url,
+    COALESCE(m.type, '') as type,
+    COALESCE(m.mime_type, '') as mime_type,
+    m.size, m.user_id,
+    COALESCE(m.created_at, 0)::BIGINT as created_at,
+    COALESCE(m.updated_at, 0)::BIGINT as updated_at,
     m.deleted_at,
-    u.name as user_name
+    u.name as user_name,
+    u.tel as user_tel,
+    u.email as user_email
 FROM media m
 JOIN users u ON m.user_id = u.id
 WHERE m.deleted_at IS NULL
@@ -162,18 +164,20 @@ type ListPublicMediaParams struct {
 }
 
 type ListPublicMediaRow struct {
-	ID         int64        `json:"id"`
-	Filename   string       `json:"filename"`
-	StoredName string       `json:"stored_name"`
-	Url        string       `json:"url"`
-	Type       string       `json:"type"`
-	MimeType   string       `json:"mime_type"`
-	Size       int64        `json:"size"`
-	UserID     int64        `json:"user_id"`
-	CreatedAt  int64        `json:"created_at"`
-	UpdatedAt  int64        `json:"updated_at"`
-	DeletedAt  sql.NullTime `json:"deleted_at"`
-	UserName   string       `json:"user_name"`
+	ID         int64          `json:"id"`
+	Filename   string         `json:"filename"`
+	StoredName string         `json:"stored_name"`
+	Url        string         `json:"url"`
+	Type       string         `json:"type"`
+	MimeType   string         `json:"mime_type"`
+	Size       int64          `json:"size"`
+	UserID     int64          `json:"user_id"`
+	CreatedAt  int64          `json:"created_at"`
+	UpdatedAt  int64          `json:"updated_at"`
+	DeletedAt  sql.NullTime   `json:"deleted_at"`
+	UserName   string         `json:"user_name"`
+	UserTel    sql.NullString `json:"user_tel"`
+	UserEmail  string         `json:"user_email"`
 }
 
 func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams) ([]ListPublicMediaRow, error) {
@@ -198,6 +202,8 @@ func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams
 			&i.UpdatedAt,
 			&i.DeletedAt,
 			&i.UserName,
+			&i.UserTel,
+			&i.UserEmail,
 		); err != nil {
 			return nil, err
 		}
@@ -213,13 +219,13 @@ func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams
 }
 
 const listUserMedia = `-- name: ListUserMedia :many
-SELECT 
-    id, filename, stored_name, url, 
-    COALESCE(type, '') as type, 
-    COALESCE(mime_type, '') as mime_type, 
-    size, user_id, 
-    COALESCE(created_at, 0)::BIGINT as created_at, 
-    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+SELECT
+    id, filename, stored_name, url,
+    COALESCE(type, '') as type,
+    COALESCE(mime_type, '') as mime_type,
+    size, user_id,
+    COALESCE(created_at, 0)::BIGINT as created_at,
+    COALESCE(updated_at, 0)::BIGINT as updated_at,
     deleted_at
 FROM media
 WHERE user_id = $1 AND deleted_at IS NULL
@@ -235,6 +241,7 @@ type ListUserMediaRow struct {
 	MimeType   string       `json:"mime_type"`
 	Size       int64        `json:"size"`
 	UserID     int64        `json:"user_id"`
+	UserEmail  string       `json:"user_email"` // Add this field
 	CreatedAt  int64        `json:"created_at"`
 	UpdatedAt  int64        `json:"updated_at"`
 	DeletedAt  sql.NullTime `json:"deleted_at"`
@@ -298,20 +305,20 @@ func (q *Queries) SoftDeleteMedia(ctx context.Context, id int64) error {
 
 const updateMedia = `-- name: UpdateMedia :one
 UPDATE media
-SET 
+SET
     filename = $2,
     type = $3,
     mime_type = $4,
     size = $5,
     updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
-RETURNING 
-    id, filename, stored_name, url, 
-    COALESCE(type, '') as type, 
-    COALESCE(mime_type, '') as mime_type, 
-    size, user_id, 
-    COALESCE(created_at, 0)::BIGINT as created_at, 
-    COALESCE(updated_at, 0)::BIGINT as updated_at, 
+RETURNING
+    id, filename, stored_name, url,
+    COALESCE(type, '') as type,
+    COALESCE(mime_type, '') as mime_type,
+    size, user_id,
+    COALESCE(created_at, 0)::BIGINT as created_at,
+    COALESCE(updated_at, 0)::BIGINT as updated_at,
     deleted_at
 `
 

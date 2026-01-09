@@ -100,7 +100,6 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 		MimeType:   mediaRow.MimeType,
 		Size:       mediaRow.Size,
 		UserID:     uint(mediaRow.UserID),
-		UserName:   user.Name,
 		CreatedAt:  mediaRow.CreatedAt,
 		UpdatedAt:  mediaRow.UpdatedAt,
 	}
@@ -151,7 +150,7 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 	}
 
 	// Fetch username
-	userRow, _ := mh.queries.GetUserByID(c.Request.Context(), mediaRow.UserID)
+	// userRow, _ := mh.queries.GetUserByID(c.Request.Context(), mediaRow.UserID)
 
 	apiMedia := models.Media{
 		ID:         uint(mediaRow.ID),
@@ -162,7 +161,6 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 		MimeType:   mediaRow.MimeType,
 		Size:       mediaRow.Size,
 		UserID:     uint(mediaRow.UserID),
-		UserName:   userRow.Name,
 		CreatedAt:  mediaRow.CreatedAt,
 		UpdatedAt:  mediaRow.UpdatedAt,
 	}
@@ -231,6 +229,8 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 			Size:       row.Size,
 			UserID:     uint(row.UserID),
 			UserName:   row.UserName,
+			UserTel:    row.UserTel.String,
+			UserEmail:  row.UserEmail,
 			CreatedAt:  row.CreatedAt,
 			UpdatedAt:  row.UpdatedAt,
 		})

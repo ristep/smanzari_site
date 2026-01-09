@@ -15,6 +15,8 @@ type Media struct {
 
 	UserID   uint   `json:"user_id"`
 	UserName string `json:"user_name"`
+	UserTel  string `json:"user_tel"`
+	UserEmail string `json:"user_email"` // Add this field
 
 	CreatedAt int64      `json:"created_at"`
 	UpdatedAt int64      `json:"updated_at"`

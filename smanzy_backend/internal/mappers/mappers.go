@@ -132,6 +132,8 @@ func MediaRowToModel(row interface{}) models.Media {
 			Size:       r.Size,
 			UserID:     uint(r.UserID),
 			UserName:   r.UserName,
+			UserTel:    r.UserTel.String,
+			UserEmail:  r.UserEmail, // Add this field
 			CreatedAt:  r.CreatedAt,
 			UpdatedAt:  r.UpdatedAt,
 		}
