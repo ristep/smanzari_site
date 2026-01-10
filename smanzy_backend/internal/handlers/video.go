@@ -159,8 +159,10 @@ func (h *VideoHandler) SyncVideosHandler(c *gin.Context) {
 		})
 		return
 	}
+	var videosCount int32 = int32(len(videos))
 
 	// Update or create videos in database
+	var errors []error
 	for _, v := range videos {
 		_, _ = h.queries.CreateVideo(c.Request.Context(), db.CreateVideoParams{
 			VideoID:      v.VideoID,
@@ -171,10 +173,15 @@ func (h *VideoHandler) SyncVideosHandler(c *gin.Context) {
 			Likes:        sql.NullInt64{Int64: v.Likes, Valid: true},
 			ThumbnailUrl: sql.NullString{String: v.ThumbnailURL, Valid: true},
 		})
+		if err != nil {
+			errors = append(errors, err)
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Videos synced successfully",
 		"fetched": len(videos),
+		"sobrani": videosCount,
+		"errors":  errors,
 	})
 }
