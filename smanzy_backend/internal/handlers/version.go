@@ -10,9 +10,9 @@ import (
 // Version constants
 const (
 	VersionMajor = 1
-	VersionMinor = 2
-	VersionPatch = 0
-	VersionPre   = "testing - sqlc v1.30.0"
+	VersionMinor = 4
+	VersionPatch = 2
+	VersionPre   = "stable"
 )
 
 // Build information (can be set via ldflags during build)
