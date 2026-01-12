@@ -112,6 +112,11 @@ export default function Navbar() {
                                         Users
                                     </NavLink>
                                 )}
+                                {user && isAdmin && (
+                                    <NavLink to="/siteadmin" isActive={isActive("/siteadmin")}>
+                                        Site Admin
+                                    </NavLink>
+                                )}
                             </div>
                         </div>
                     </div>

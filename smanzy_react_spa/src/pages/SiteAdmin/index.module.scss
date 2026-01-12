@@ -1,0 +1,165 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.profileCard {
+    max-width: $breakpoint-md; // approx 2xl (42rem)
+    margin: $spacing-8 auto;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-card-border);
+    border-radius: $radius-xl;
+    box-shadow: $shadow-xl;
+    overflow: hidden;
+}
+
+.header {
+    padding: $spacing-5 $spacing-6;
+    background-color: var(--color-background-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.5rem;
+    color: var(--color-text-primary);
+}
+
+.subtitle {
+    margin-top: $spacing-1;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+}
+
+.actions {
+    display: flex;
+    gap: $spacing-3;
+}
+
+.content {
+    border-top: 1px solid var(--color-card-border);
+}
+
+.field {
+    padding: $spacing-5 $spacing-6;
+    border-bottom: 1px solid var(--color-card-border);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $spacing-1;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    @include breakpoint($breakpoint-sm) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: $spacing-4;
+    }
+
+    &.alt {
+        background-color: var(--color-background-secondary);
+    }
+}
+
+.label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.value {
+    margin-top: $spacing-1;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+
+    @include breakpoint($breakpoint-sm) {
+        margin-top: 0;
+        grid-column: span 2;
+    }
+
+    &.italic {
+        color: var(--color-text-muted);
+        font-style: italic;
+    }
+}
+
+.input {
+    width: 100%;
+    max-width: 100%;
+    padding: $spacing-2 $spacing-3;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-card-border);
+    border-radius: $radius-md;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    box-shadow: $shadow-sm;
+    transition: all $transition-fast;
+
+    &:focus {
+        outline: none;
+        border-color: #60a5fa; // blue-400
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    }
+
+    @include breakpoint($breakpoint-sm) {
+        max-width: 100%;
+    }
+}
+
+// Input size variants
+.inputSm {
+    @include breakpoint($breakpoint-sm) {
+        max-width: 8rem; // approx 128px for small fields (age)
+    }
+}
+
+.inputMd {
+    @include breakpoint($breakpoint-sm) {
+        max-width: 16rem; // approx 256px for medium fields (tel, city, gender, country)
+    }
+}
+
+.inputLg {
+    @include breakpoint($breakpoint-sm) {
+        max-width: 100%; // full width for large fields (name, address)
+    }
+}
+
+.rolesList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-2;
+}
+
+.rolePill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem $spacing-2.5;
+    border-radius: $radius-full;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: rgba(59, 130, 246, 0.1); // using blue-500/10 as fallback for accent
+    color: #3b82f6; // blue-500
+    text-transform: capitalize;
+
+    [data-theme="dark"] & {
+        background-color: rgba(96, 165, 250, 0.1);
+        color: #60a5fa;
+    }
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: $spacing-10 0;
+    color: var(--color-text-secondary);
+}
+
+.error {
+    color: #ef4444; // red-500
+
+    [data-theme="dark"] & {
+        color: #f87171; // red-400
+    }
+}
