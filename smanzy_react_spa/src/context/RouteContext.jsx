@@ -18,20 +18,99 @@ export const RouteProvider = ({ children }) => {
 
             // The data structure you would get from your DB/API
             const appRoutes = [
-                { index: true, component: 'Home', title: 'Home' },
-                { path: 'videos', component: 'Videos', title: 'Videos' },
-                { path: 'about', component: 'About', title: 'About' },
-                { path: 'login', component: 'Login', title: 'Login' },
-                { path: 'register', component: 'Register', title: 'Register' },
-                { path: 'profile', component: 'Profile', title: 'Profile' },
-                { path: 'media', component: 'MediaManager', title: 'Media Manager' },
-                { path: 'media/edit/:id', component: 'UpdateMedia', title: 'Update Media' },
-                { path: 'mediacards', component: 'MediaManagerCards', title: 'Media Manager Cards' },
-                { path: 'albums', component: 'AlbumList', title: 'Album List' },
-                { path: 'albums/:id', component: 'AlbumDetail', title: 'Album Detail' },
-                { path: 'users', component: 'UserManagement', title: 'User Management' },
-                { path: 'settings', component: 'Settings', title: 'Settings' },
-                { path: '*', component: 'NotFound', title: 'Not Found' },
+                {
+                    index: true,
+                    component: 'Home',
+                    title: 'Home',
+                    protected: false,
+                    group: 'menu'
+                },
+                {
+                    path: 'videos',
+                    component: 'Videos',
+                    title: 'Videos',
+                    protected: false,
+                    group: 'menu'
+                },
+                {
+                    path: 'about',
+                    component: 'About',
+                    title: 'About',
+                    protected: false,
+                    group: 'menu'
+                },
+                {
+                    path: 'login',
+                    component: 'Login',
+                    title: 'Login',
+                    protected: false,
+                },
+                {
+                    path: 'register',
+                    component: 'Register',
+                    title: 'Register',
+                    protected: false
+                },
+                {
+                    path: 'profile',
+                    component: 'Profile',
+                    title: 'Profile',
+                    protected: true,
+                    group: "admin"
+                },
+                {
+                    path: 'media',
+                    component: 'MediaManager',
+                    title: 'Media List',
+                    protected: true,
+                    group: "menu"
+                },
+                {
+                    path: 'media/edit/:id',
+                    component: 'UpdateMedia',
+                    title: 'Update Media',
+                    protected: true,
+                },
+                {
+                    path: 'mediacards',
+                    component: 'MediaManagerCards',
+                    title: 'Media Cards',
+                    protected: true,
+                    group: "menu"
+                },
+                {
+                    path: 'albums',
+                    component: 'AlbumList',
+                    title: 'Albums',
+                    protected: true,
+                    group: "menu"
+                },
+                {
+                    path: 'albums/:id',
+                    component: 'AlbumDetail',
+                    title: 'Album Detail',
+                    protected: true,
+                },
+                {
+                    path: 'users',
+                    component: 'UserManagement',
+                    title: 'Users',
+                    protected: true,
+                    group: "admin"
+                },
+                {
+                    path: 'settings',
+                    component: 'Settings',
+                    title: 'Settings',
+                    protected: true,
+                    group: "admin"
+                },
+                {
+                    path: '*',
+                    component: 'NotFound',
+                    title: 'Not Found',
+                    protected: false,
+                },
             ];
 
             setRoutes(appRoutes);

@@ -1,6 +1,6 @@
 export const VERSION_MAJOR = 1;
 export const VERSION_MINOR = 0;
-export const VERSION_PATCH = 12;
+export const VERSION_PATCH = 13;
 
 export const formatVersion = (major, minor, patch) => {
     return `${major}.${minor}.${patch}`;

@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import styles from "./index.module.scss";
 
 import { Link, useNavigate, useLocation } from "react-router-dom";
@@ -8,6 +9,7 @@ import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
 import logoImage from "@/assets/smanzy_logo_180.png";
 import { useUser } from "@/context/UserContext";
+import { RouteContext } from "@/context/RouteContext";
 
 const NavLink = ({ to, children, mobile = false, isActive, onClick }) => (
     <Link
@@ -27,6 +29,7 @@ export default function Navbar() {
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { user, logout } = useUser();
+    const { routes } = useContext(RouteContext);
 
     const isAdmin = user?.roles?.some((r) => r.name === "admin");
 
@@ -67,6 +70,7 @@ export default function Navbar() {
         <nav className={clsx(styles.navbar, !isVisible && styles.hidden)}>
             <div className={styles.container}>
                 <div className={styles.content}>
+
                     {/* Logo */}
                     <div className={styles.leftSection}>
                         <Link to="/" className={styles.logo}>
@@ -75,50 +79,25 @@ export default function Navbar() {
                             </div>
                         </Link>
 
-                        {/* Desktop Nav */}
+                        {/* Desktop Nav menu */}
                         <div className={styles.navDesktop}>
                             <div className={styles.navList}>
-                                <NavLink to="/" isActive={isActive("/")}>
-                                    Home
-                                </NavLink>
-                                <NavLink to="/videos" isActive={isActive("/videos")}>
-                                    Videos
-                                </NavLink>
-                                <NavLink to="/about" isActive={isActive("/about")}>
-                                    About
-                                </NavLink>
-                                {user && (
-                                    <NavLink to="/media" isActive={isActive("/media")}>
-                                        Media List
-                                    </NavLink>
-                                )}
-                                {user && (
-                                    <NavLink to="/mediacards" isActive={isActive("/mediacards")}>
-                                        Media Cards
-                                    </NavLink>
-                                )}
-                                {user && (
-                                    <NavLink to="/albums" isActive={isActive("/albums")}>
-                                        Albums
-                                    </NavLink>
-                                )}
-                                {user && (
-                                    <NavLink to="/profile" isActive={isActive("/profile")}>
-                                        Profile
-                                    </NavLink>
-                                )}
-                                {user && isAdmin && (
-                                    <NavLink to="/users" isActive={isActive("/users")}>
-                                        Users
-                                    </NavLink>
-                                )}
-                                {user && isAdmin && (
-                                    <NavLink to="/settings" isActive={isActive("/settings")}>
-                                        Settings
-                                    </NavLink>
-                                )}
+                                {routes.map((route, index) => (
+                                    route.group === "menu" && (
+                                        (route.protected === false ? (
+                                            <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
+                                                {route.title}
+                                            </NavLink>
+                                        ) : (user && (
+                                            <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
+                                                {route.title}
+                                            </NavLink>
+                                        )))
+                                    )
+                                ))}
                             </div>
                         </div>
+                        {/* End of desktop menu */}
                     </div>
 
                     {/* Desktop Auth Buttons */}
@@ -126,9 +105,9 @@ export default function Navbar() {
                         <div className={styles.authList}>
                             {user ? (
                                 <div className="flex items-center gap-4">
-                                    <span className={styles.userName}>
+                                    <NavLink to="/profile" className={styles.userName}>
                                         {user.name}
-                                    </span>
+                                    </NavLink>
                                     <Button onClick={() => {
                                         logout();
                                         setIsMobileMenuOpen(false);
@@ -141,9 +120,6 @@ export default function Navbar() {
                                     <Link to="/login" className={styles.loginLink}>
                                         Login
                                     </Link>
-                                    <Button onClick={() => navigate("/register")} size="sm">
-                                        Register
-                                    </Button>
                                 </div>
                             )}
                         </div>
@@ -168,78 +144,20 @@ export default function Navbar() {
                 <div className={styles.mobileContent}>
 
                     {/* Navigation Links */}
-                    <div className={styles.mobileNavSection}>
-                        <NavLink
-                            to="/"
-                            mobile
-                            isActive={isActive("/")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Home
-                        </NavLink>
-                        <NavLink
-                            to="/videos"
-                            mobile
-                            isActive={isActive("/videos")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Videos
-                        </NavLink>
-                        <NavLink
-                            to="/about"
-                            mobile
-                            isActive={isActive("/about")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            About
-                        </NavLink>
-                        {user && (
-                            <>
-                                <NavLink
-                                    to="/media"
-                                    mobile
-                                    isActive={isActive("/media")}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Media List
+                    {routes.map((route, index) => (
+                        route.group === "menu" && (
+                            (route.protected === false ? (
+                                <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
+                                    {route.title}
                                 </NavLink>
-                                <NavLink
-                                    to="/mediacards"
-                                    mobile
-                                    isActive={isActive("/mediacards")}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Media Cards
+                            ) : (user && (
+                                <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
+                                    {route.title}
                                 </NavLink>
-                                <NavLink
-                                    to="/albums"
-                                    mobile
-                                    isActive={isActive("/albums")}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Albums
-                                </NavLink>
-                                <NavLink
-                                    to="/profile"
-                                    mobile
-                                    isActive={isActive("/profile")}
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    Profile
-                                </NavLink>
-                                {isAdmin && (
-                                    <NavLink
-                                        to="/users"
-                                        mobile
-                                        isActive={isActive("/users")}
-                                        onClick={() => setIsMobileMenuOpen(false)}
-                                    >
-                                        Users
-                                    </NavLink>
-                                )}
-                            </>
-                        )}
-                    </div>
+                            ))
+                            )
+                        )
+                    ))}
 
                     {/* Auth Buttons */}
                     <div className={styles.mobileAuth}>
@@ -253,14 +171,6 @@ export default function Navbar() {
                                     }}
                                 >
                                     Login
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        navigate("/register");
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                >
-                                    Register
                                 </Button>
                             </div>
                         ) : (
