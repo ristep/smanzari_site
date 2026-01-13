@@ -37,7 +37,6 @@ export default function Navbar() {
     const isActive = (path) => location.pathname === path;
 
     const hasAccess = (route) => {
-        if (route.group !== "menu") return false;
         // Public routes (no roles defined)
         if (!route.roles || route.roles.length === 0) return true;
         // Protected routes require user
@@ -46,6 +45,15 @@ export default function Navbar() {
         return user.roles.some((r) => route.roles.includes(r.name));
     };
 
+    const inMenu = (route) => {
+        if (route.group !== "menu") return false;
+        return hasAccess(route);
+    };
+
+    const inAdminMenu = (route) => {  // to be implemented soon
+        if (route.group !== "adminMenu") return false;
+        return hasAccess(route);
+    };
 
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
@@ -95,7 +103,7 @@ export default function Navbar() {
                         <div className={styles.navDesktop}>
                             <div className={styles.navList}>
                                 {routes
-                                    .filter(hasAccess)
+                                    .filter(inMenu)
                                     .map((route, index) => (
                                         <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
                                             {route.title}
@@ -151,7 +159,7 @@ export default function Navbar() {
 
                     {/* Navigation Links */}
                     {routes
-                        .filter(hasAccess)
+                        .filter(inMenu)
                         .map((route, index) => (
                             <NavLink
                                 key={index}
