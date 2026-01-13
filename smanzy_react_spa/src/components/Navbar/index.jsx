@@ -31,9 +31,21 @@ export default function Navbar() {
     const { user, logout } = useUser();
     const { routes } = useContext(RouteContext);
 
+    // Check if user has admin role
     const isAdmin = user?.roles?.some((r) => r.name === "admin");
 
     const isActive = (path) => location.pathname === path;
+
+    const hasAccess = (route) => {
+        if (route.group !== "menu") return false;
+        // Public routes (no roles defined)
+        if (!route.roles || route.roles.length === 0) return true;
+        // Protected routes require user
+        if (!user || !user.roles) return false;
+        // Check matching roles
+        return user.roles.some((r) => route.roles.includes(r.name));
+    };
+
 
     const [isVisible, setIsVisible] = useState(true);
     const [lastScrollY, setLastScrollY] = useState(0);
@@ -71,8 +83,8 @@ export default function Navbar() {
             <div className={styles.container}>
                 <div className={styles.content}>
 
-                    {/* Logo */}
                     <div className={styles.leftSection}>
+                        {/* Logo */}
                         <Link to="/" className={styles.logo}>
                             <div className={styles.logoIcon}>
                                 <img src={logoImage} alt="Logo" />
@@ -82,22 +94,16 @@ export default function Navbar() {
                         {/* Desktop Nav menu */}
                         <div className={styles.navDesktop}>
                             <div className={styles.navList}>
-                                {routes.map((route, index) => (
-                                    route.group === "menu" && (
-                                        (route.protected === false ? (
-                                            <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
-                                                {route.title}
-                                            </NavLink>
-                                        ) : (user && (
-                                            <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
-                                                {route.title}
-                                            </NavLink>
-                                        )))
-                                    )
-                                ))}
+                                {routes
+                                    .filter(hasAccess)
+                                    .map((route, index) => (
+                                        <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
+                                            {route.title}
+                                        </NavLink>
+                                    ))
+                                }
                             </div>
                         </div>
-                        {/* End of desktop menu */}
                     </div>
 
                     {/* Desktop Auth Buttons */}
@@ -144,20 +150,20 @@ export default function Navbar() {
                 <div className={styles.mobileContent}>
 
                     {/* Navigation Links */}
-                    {routes.map((route, index) => (
-                        route.group === "menu" && (
-                            (route.protected === false ? (
-                                <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
-                                    {route.title}
-                                </NavLink>
-                            ) : (user && (
-                                <NavLink key={index} to={route.path} isActive={isActive(route.path)}>
-                                    {route.title}
-                                </NavLink>
-                            ))
-                            )
-                        )
-                    ))}
+                    {routes
+                        .filter(hasAccess)
+                        .map((route, index) => (
+                            <NavLink
+                                key={index}
+                                to={route.path}
+                                mobile
+                                isActive={isActive(route.path)}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                            >
+                                {route.title}
+                            </NavLink>
+                        ))
+                    }
 
                     {/* Auth Buttons */}
                     <div className={styles.mobileAuth}>
@@ -174,20 +180,27 @@ export default function Navbar() {
                                 </Button>
                             </div>
                         ) : (
-                            <Button
-                                variant="danger"
-                                className="w-full"
-                                onClick={() => {
-                                    logout();
-                                    setIsMobileMenuOpen(false);
-                                }}
-                            >
-                                Logout
-                            </Button>
+                            <div className={styles.mobileAuthGrid}>
+                                <NavLink to="/profile" className={styles.userName} onClick={() => setIsMobileMenuOpen(false)}>
+                                    {user.name}
+                                </NavLink>
+                                <Button
+                                    variant="danger"
+                                    className="w-full"
+                                    onClick={() => {
+                                        logout();
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                >
+                                    Logout
+                                </Button>
+                            </div>
                         )}
                     </div>
                 </div>
             </div>
-        </nav >
+            {/* End of mobile menu */}
+        </nav>
     );
 }
+

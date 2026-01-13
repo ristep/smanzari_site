@@ -22,94 +22,87 @@ export const RouteProvider = ({ children }) => {
                     index: true,
                     component: 'Home',
                     title: 'Home',
-                    protected: false,
                     group: 'menu'
                 },
                 {
                     path: 'videos',
                     component: 'Videos',
                     title: 'Videos',
-                    protected: false,
                     group: 'menu'
                 },
                 {
                     path: 'about',
                     component: 'About',
                     title: 'About',
-                    protected: false,
                     group: 'menu'
                 },
                 {
                     path: 'login',
                     component: 'Login',
                     title: 'Login',
-                    protected: false,
                 },
                 {
                     path: 'register',
                     component: 'Register',
                     title: 'Register',
-                    protected: false
                 },
                 {
                     path: 'profile',
                     component: 'Profile',
                     title: 'Profile',
-                    protected: true,
-                    group: "admin"
+                    roles: ['user'],
                 },
                 {
                     path: 'media',
                     component: 'MediaManager',
                     title: 'Media List',
-                    protected: true,
-                    group: "menu"
+                    group: 'menu',
+                    roles: ['user'],
                 },
                 {
                     path: 'media/edit/:id',
                     component: 'UpdateMedia',
                     title: 'Update Media',
-                    protected: true,
+                    roles: ['user'],
                 },
                 {
                     path: 'mediacards',
                     component: 'MediaManagerCards',
                     title: 'Media Cards',
-                    protected: true,
-                    group: "menu"
+                    group: 'menu',
+                    roles: ['user'],
                 },
                 {
                     path: 'albums',
                     component: 'AlbumList',
                     title: 'Albums',
-                    protected: true,
-                    group: "menu"
+                    group: 'menu',
+                    roles: ['user'],
                 },
                 {
                     path: 'albums/:id',
                     component: 'AlbumDetail',
                     title: 'Album Detail',
-                    protected: true,
+                    roles: ['user'],
                 },
                 {
                     path: 'users',
                     component: 'UserManagement',
                     title: 'Users',
-                    protected: true,
-                    group: "admin"
+                    group: 'menu',
+                    roles: ['admin'],
                 },
                 {
                     path: 'settings',
                     component: 'Settings',
                     title: 'Settings',
-                    protected: true,
-                    group: "admin"
+                    group: 'menu',
+                    roles: ['admin'],
                 },
                 {
                     path: '*',
                     component: 'NotFound',
                     title: 'Not Found',
-                    protected: false,
                 },
             ];
 
