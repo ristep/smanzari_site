@@ -1,0 +1,117 @@
+@use '@/styles/abstracts/variables' as *;
+@use '@/styles/abstracts/mixins' as *;
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    padding: $spacing-4;
+    border-radius: $radius-md;
+    border: 1px solid;
+    position: relative;
+    font-size: 0.875rem;
+    line-height: 1.5;
+
+    .content {
+        display: flex;
+        align-items: flex-start;
+        flex: 1;
+        gap: $spacing-3;
+    }
+
+    .iconContainer {
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    .icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .message {
+        flex: 1;
+        color: var(--color-text);
+    }
+
+    .closeButton {
+        position: absolute;
+        top: $spacing-2;
+        right: $spacing-2;
+        padding: $spacing-1;
+        border: none;
+        background: none;
+        cursor: pointer;
+        border-radius: $radius-sm;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color $transition-fast;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    .closeIcon {
+        width: 1rem;
+        height: 1rem;
+        opacity: 0.7;
+    }
+
+    // Variants
+    &.success {
+        background-color: #f0fdf4; // green-50
+        border-color: #22c55e; // green-500
+        color: #166534; // green-800
+
+        .icon {
+            color: #22c55e; // green-500
+        }
+
+        .closeButton:hover {
+            background-color: rgba(34, 197, 94, 0.1);
+        }
+    }
+
+    &.error {
+        background-color: #fef2f2; // red-50
+        border-color: #ef4444; // red-500
+        color: #991b1b; // red-800
+
+        .icon {
+            color: #ef4444; // red-500
+        }
+
+        .closeButton:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+    }
+
+    &.warning {
+        background-color: #fffbeb; // amber-50
+        border-color: #f59e0b; // amber-500
+        color: #92400e; // amber-800
+
+        .icon {
+            color: #f59e0b; // amber-500
+        }
+
+        .closeButton:hover {
+            background-color: rgba(245, 158, 11, 0.1);
+        }
+    }
+
+    &.info {
+        background-color: #eff6ff; // blue-50
+        border-color: #3b82f6; // blue-500
+        color: #1e40af; // blue-800
+
+        .icon {
+            color: #3b82f6; // blue-500
+        }
+
+        .closeButton:hover {
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+    }
+}

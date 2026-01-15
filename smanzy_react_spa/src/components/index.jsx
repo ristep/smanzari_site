@@ -13,3 +13,4 @@ export { default as FileIcon } from "@/components/FileIcon";
 export { default as MediaPreviewOverlay } from "@/components/MediaPreviewOverlay";
 export { default as UploadPanel } from "@/components/UploadPanel";
 export { default as PhotoCarousel } from "@/components/PhotoCarousel";
+export { default as Alert } from "@/components/Alert";
