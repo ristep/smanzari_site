@@ -1,9 +1,10 @@
+// settings page styles
 @use "@/styles/abstracts/variables" as *;
 @use "@/styles/abstracts/mixins" as *;
 
 .container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 2rem 1rem;
     background-color: rgba(255, 255, 255, 0);
@@ -19,6 +20,14 @@
     margin: 0;
 }
 
-.versionInfo {
-    margin-top: $spacing-5;
+.listItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-4;
+}
+
+.lineBreak {
+    margin: $spacing-4 0;
+    border-bottom: .2px solid var(--color-card-border);
 }
