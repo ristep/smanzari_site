@@ -214,6 +214,47 @@ func (mh *MediaHandler) ServeFileHandler(c *gin.Context) {
 	c.File(filePath)
 }
 
+// ServeThumbnailHandler serves thumbnail files from subdirectories
+func (mh *MediaHandler) ServeThumbnailHandler(c *gin.Context) {
+	size := c.Param("size")
+	name := c.Param("name")
+
+	// Validate size parameter to prevent path traversal
+	if size == "" || name == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid parameters"})
+		return
+	}
+
+	// Only allow known thumbnail sizes
+	allowedSizes := map[string]bool{
+		"320x200": true,
+		"800x600": true,
+	}
+	if !allowedSizes[size] {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid thumbnail size"})
+		return
+	}
+
+	// Validate filename is just a basename
+	if filepath.Base(name) != name {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid filename"})
+		return
+	}
+
+	// Construct the full path to the thumbnail file
+	thumbnailPath := filepath.Join(mh.uploadDir, size, name)
+
+	if _, err := os.Stat(thumbnailPath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, ErrorResponse{Error: "Thumbnail not found"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Filesystem error"})
+		return
+	}
+
+	c.File(thumbnailPath)
+}
+
 // ListPublicMediasHandler returns a paginated list of medias for public consumption
 func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 	limitStr := c.DefaultQuery("limit", "10")
