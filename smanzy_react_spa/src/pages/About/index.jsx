@@ -32,12 +32,11 @@ export default function About() {
                             <p className={styles.error}>Error loading version info</p>
                         ) : (
                             <div>
-                                <strong>Frontend Version Information</strong>
+                                <strong>Frontend Version</strong>
                                 <ul className={styles.list}>
                                     <li>Version: {frontendVersion.version}</li>
                                 </ul>
-                                <strong>API Version Information</strong>
-                                <strong>API Version Information</strong>
+                                <strong>API Version</strong>
                                 <ul className={styles.list}>
                                     <li>Version: {versionInfo?.version}</li>
                                     <li>Build Time: {versionInfo?.build_time}</li>
