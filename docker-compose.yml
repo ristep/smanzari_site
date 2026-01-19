@@ -34,6 +34,7 @@ services:
       JWT_SECRET: "${JWT_SECRET}"
       SERVER_PORT: "8080"
       UPLOAD_DIR: "/app/uploads"
+      MEDIA_BASE_URL: "/api/media/files/"
       GIN_MODE: "release"
     restart: unless-stopped
     depends_on:
