@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS media (
     id BIGSERIAL PRIMARY KEY,
     filename TEXT NOT NULL,
     stored_name TEXT NOT NULL,
-    url TEXT NOT NULL,
     type TEXT,
     mime_type TEXT,
     size BIGINT NOT NULL,

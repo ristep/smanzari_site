@@ -29,7 +29,6 @@ type Medium struct {
 	ID         int64          `json:"id"`
 	Filename   string         `json:"filename"`
 	StoredName string         `json:"stored_name"`
-	Url        string         `json:"url"`
 	Type       sql.NullString `json:"type"`
 	MimeType   sql.NullString `json:"mime_type"`
 	Size       int64          `json:"size"`

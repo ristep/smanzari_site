@@ -55,10 +55,9 @@ func NewMediaHandler(conn *sql.DB, queries *db.Queries) *MediaHandler {
 }
 
 // GenThumbnailURL generates thumbnail URL
-func (mh *MediaHandler) GenThumbnailURL(url string, size string) string {
-
-	baseName := strings.TrimSuffix(url, filepath.Ext(url))
-	return mh.mediaBaseURL + size + baseName + ".jpg"
+func (mh *MediaHandler) GenThumbnailURL(storedName string, size string) string {
+	baseName := strings.TrimSuffix(storedName, filepath.Ext(storedName))
+	return mh.mediaBaseURL + size + "/" + baseName + ".jpg"
 }
 
 // GenMediaURL generates media URL
@@ -98,7 +97,6 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 	mediaRow, err := mh.queries.CreateMedia(c.Request.Context(), db.CreateMediaParams{
 		Filename:   file.Filename,
 		StoredName: uniqueName,
-		Url:        mh.mediaBaseURL + uniqueName,
 		Type:       sql.NullString{String: "file", Valid: true},
 		MimeType:   sql.NullString{String: file.Header.Get("Content-Type"), Valid: true},
 		Size:       file.Size,
@@ -118,7 +116,7 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 		Filename:     mediaRow.Filename,
 		StoredName:   mediaRow.StoredName,
 		URL:          mh.GenMediaURL(mediaRow.StoredName),
-		ThumbnailURL: mh.GenThumbnailURL(mediaRow.Url, "320x200"),
+		ThumbnailURL: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
 		Type:         mediaRow.Type,
 		MimeType:     mediaRow.MimeType,
 		Size:         mediaRow.Size,
@@ -180,7 +178,7 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 		Filename:     mediaRow.Filename,
 		StoredName:   mediaRow.StoredName,
 		URL:          mh.GenMediaURL(mediaRow.StoredName),
-		ThumbnailURL: mh.GenThumbnailURL(mediaRow.Url, "320x200"),
+		ThumbnailURL: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
 		Type:         mediaRow.Type,
 		MimeType:     mediaRow.MimeType,
 		Size:         mediaRow.Size,
@@ -248,7 +246,7 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 			Filename:     row.Filename,
 			StoredName:   row.StoredName,
 			URL:          mh.GenMediaURL(row.StoredName),
-			ThumbnailURL: mh.GenThumbnailURL(row.Url, "320x200"),
+			ThumbnailURL: mh.GenThumbnailURL(row.StoredName, "320x200"),
 			Type:         row.Type,
 			MimeType:     row.MimeType,
 			Size:         row.Size,
@@ -349,8 +347,8 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 
 			// Update row values
 			// Note: We need a specialized query for this or use conn.Exec
-			_, _ = mh.conn.ExecContext(c.Request.Context(), "UPDATE media SET stored_name = $2, url = $3, mime_type = $4, size = $5 WHERE id = $1",
-				mediaRow.ID, uniqueName, mh.GenMediaURL(uniqueName), file.Header.Get("Content-Type"), file.Size)
+			_, _ = mh.conn.ExecContext(c.Request.Context(), "UPDATE media SET stored_name = $2, mime_type = $3, size = $4 WHERE id = $1",
+				mediaRow.ID, uniqueName, file.Header.Get("Content-Type"), file.Size)
 		}
 	}
 

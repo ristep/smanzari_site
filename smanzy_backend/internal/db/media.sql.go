@@ -24,15 +24,15 @@ func (q *Queries) CountPublicMedia(ctx context.Context) (int64, error) {
 
 const createMedia = `-- name: CreateMedia :one
 INSERT INTO media (
-    filename, stored_name, url, type, mime_type, size, user_id,
+    filename, stored_name, type, mime_type, size, user_id,
     created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
+    $1, $2, $3, $4, $5, $6,
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
 RETURNING
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -44,7 +44,6 @@ RETURNING
 type CreateMediaParams struct {
 	Filename   string         `json:"filename"`
 	StoredName string         `json:"stored_name"`
-	Url        string         `json:"url"`
 	Type       sql.NullString `json:"type"`
 	MimeType   sql.NullString `json:"mime_type"`
 	Size       int64          `json:"size"`
@@ -55,7 +54,6 @@ type CreateMediaRow struct {
 	ID         int64        `json:"id"`
 	Filename   string       `json:"filename"`
 	StoredName string       `json:"stored_name"`
-	Url        string       `json:"url"`
 	Type       string       `json:"type"`
 	MimeType   string       `json:"mime_type"`
 	Size       int64        `json:"size"`
@@ -69,7 +67,6 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Creat
 	row := q.db.QueryRowContext(ctx, createMedia,
 		arg.Filename,
 		arg.StoredName,
-		arg.Url,
 		arg.Type,
 		arg.MimeType,
 		arg.Size,
@@ -80,7 +77,6 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Creat
 		&i.ID,
 		&i.Filename,
 		&i.StoredName,
-		&i.Url,
 		&i.Type,
 		&i.MimeType,
 		&i.Size,
@@ -94,7 +90,7 @@ func (q *Queries) CreateMedia(ctx context.Context, arg CreateMediaParams) (Creat
 
 const getMediaByID = `-- name: GetMediaByID :one
 SELECT
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -110,7 +106,6 @@ type GetMediaByIDRow struct {
 	ID         int64        `json:"id"`
 	Filename   string       `json:"filename"`
 	StoredName string       `json:"stored_name"`
-	Url        string       `json:"url"`
 	Type       string       `json:"type"`
 	MimeType   string       `json:"mime_type"`
 	Size       int64        `json:"size"`
@@ -127,7 +122,6 @@ func (q *Queries) GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, 
 		&i.ID,
 		&i.Filename,
 		&i.StoredName,
-		&i.Url,
 		&i.Type,
 		&i.MimeType,
 		&i.Size,
@@ -141,7 +135,7 @@ func (q *Queries) GetMediaByID(ctx context.Context, id int64) (GetMediaByIDRow, 
 
 const listPublicMedia = `-- name: ListPublicMedia :many
 SELECT
-    m.id, m.filename, m.stored_name, m.url,
+    m.id, m.filename, m.stored_name,
     COALESCE(m.type, '') as type,
     COALESCE(m.mime_type, '') as mime_type,
     m.size, m.user_id,
@@ -167,7 +161,6 @@ type ListPublicMediaRow struct {
 	ID         int64          `json:"id"`
 	Filename   string         `json:"filename"`
 	StoredName string         `json:"stored_name"`
-	Url        string         `json:"url"`
 	Type       string         `json:"type"`
 	MimeType   string         `json:"mime_type"`
 	Size       int64          `json:"size"`
@@ -193,7 +186,6 @@ func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams
 			&i.ID,
 			&i.Filename,
 			&i.StoredName,
-			&i.Url,
 			&i.Type,
 			&i.MimeType,
 			&i.Size,
@@ -220,7 +212,7 @@ func (q *Queries) ListPublicMedia(ctx context.Context, arg ListPublicMediaParams
 
 const listUserMedia = `-- name: ListUserMedia :many
 SELECT
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -236,7 +228,6 @@ type ListUserMediaRow struct {
 	ID         int64        `json:"id"`
 	Filename   string       `json:"filename"`
 	StoredName string       `json:"stored_name"`
-	Url        string       `json:"url"`
 	Type       string       `json:"type"`
 	MimeType   string       `json:"mime_type"`
 	Size       int64        `json:"size"`
@@ -259,7 +250,6 @@ func (q *Queries) ListUserMedia(ctx context.Context, userID int64) ([]ListUserMe
 			&i.ID,
 			&i.Filename,
 			&i.StoredName,
-			&i.Url,
 			&i.Type,
 			&i.MimeType,
 			&i.Size,
@@ -312,7 +302,7 @@ SET
     updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
 RETURNING
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -333,7 +323,6 @@ type UpdateMediaRow struct {
 	ID         int64        `json:"id"`
 	Filename   string       `json:"filename"`
 	StoredName string       `json:"stored_name"`
-	Url        string       `json:"url"`
 	Type       string       `json:"type"`
 	MimeType   string       `json:"mime_type"`
 	Size       int64        `json:"size"`
@@ -356,7 +345,6 @@ func (q *Queries) UpdateMedia(ctx context.Context, arg UpdateMediaParams) (Updat
 		&i.ID,
 		&i.Filename,
 		&i.StoredName,
-		&i.Url,
 		&i.Type,
 		&i.MimeType,
 		&i.Size,
