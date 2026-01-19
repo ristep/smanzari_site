@@ -27,7 +27,7 @@ var targetSizes = []struct {
 	{"800x600", 800, 600},
 }
 
-const uploadDir = "../smanzy_data/uploads"
+var uploadDir = "../smanzy_data/uploads"
 
 // Command line flags
 var forceRegen bool
@@ -37,17 +37,25 @@ func main() {
 	flag.BoolVar(&forceRegen, "regenerate", false, "Scans folder and regenerates all thumbnails, then exits.")
 	flag.Parse()
 
+	// Override uploadDir from environment if present
+	if envDir := os.Getenv("UPLOAD_DIR"); envDir != "" {
+		uploadDir = envDir
+	}
+
 	setupDirectories()
+
+	// 1. Run Garbage Collector (Clean up orphans on restart)
+	fmt.Println(">>> Running Garbage Collector...")
+	runGarbageCollector()
 
 	// 2. Mode Selection
 	if forceRegen {
 		fmt.Println(">>> Mode: REGENERATE (Processing all existing files)")
 		performRegeneration()
 		fmt.Println(">>> Regeneration complete.")
-		return
 	}
 
-	fmt.Println(">>> Mode: WATCHER (Waiting for new files in ./uploads)")
+	fmt.Printf(">>> Mode: WATCHER (Waiting for new files in %s)\n", uploadDir)
 	startWatcher()
 }
 
@@ -75,6 +83,26 @@ func processFile(path string) {
 		processVideo(path, fileName)
 	}
 	// If neither, we ignore it silently
+}
+
+func deleteThumbnailsFor(originalName string) {
+	fmt.Printf("[Delete] Cleaning thumbs for: %s\n", originalName)
+
+	baseName := strings.TrimSuffix(originalName, filepath.Ext(originalName))
+	thumbName := baseName + ".jpg"
+
+	for _, size := range targetSizes {
+		thumbPath := filepath.Join(uploadDir, size.dirName, thumbName)
+
+		// Check if it exists before trying to delete (avoid error logs)
+		if _, err := os.Stat(thumbPath); err == nil {
+			if err := os.Remove(thumbPath); err != nil {
+				log.Printf("   Error deleting thumb %s: %v", thumbPath, err)
+			} else {
+				fmt.Printf("   -> Deleted %s\n", thumbPath)
+			}
+		}
+	}
 }
 
 func processImage(path, originalName string) {
@@ -227,4 +255,56 @@ func isImage(filename string) bool {
 func isVideo(filename string) bool {
 	ext := strings.ToLower(filepath.Ext(filename))
 	return ext == ".mp4" || ext == ".mov" || ext == ".avi" || ext == ".mkv" || ext == ".webm"
+}
+
+// -------------------------
+// Garbage Collector & Utils
+// -------------------------
+
+func runGarbageCollector() {
+	// 1. Index all currently valid "base names" in the upload folder
+	validBasenames := make(map[string]bool)
+
+	files, err := os.ReadDir(uploadDir)
+	if err != nil {
+		log.Printf("GC Error reading uploads: %v", err)
+		return
+	}
+
+	for _, f := range files {
+		if f.IsDir() || strings.HasPrefix(f.Name(), ".") {
+			continue
+		}
+		if isImage(f.Name()) || isVideo(f.Name()) {
+			// Store "myvideo" from "myvideo.mp4"
+			base := strings.TrimSuffix(f.Name(), filepath.Ext(f.Name()))
+			validBasenames[base] = true
+		}
+	}
+
+	// 2. Scan thumbnail folders and delete orphans
+	for _, size := range targetSizes {
+		thumbDir := filepath.Join(uploadDir, size.dirName)
+		thumbs, err := os.ReadDir(thumbDir)
+		if err != nil {
+			continue
+		}
+
+		for _, t := range thumbs {
+			if t.IsDir() {
+				continue
+			}
+
+			// Thumbnails are always .jpg. Get the base name.
+			// e.g. "myvideo.jpg" -> "myvideo"
+			thumbBase := strings.TrimSuffix(t.Name(), filepath.Ext(t.Name()))
+
+			// If "myvideo" is not in our valid list, delete the thumbnail
+			if !validBasenames[thumbBase] {
+				fullPath := filepath.Join(thumbDir, t.Name())
+				fmt.Printf("[GC] Deleting orphan: %s\n", fullPath)
+				os.Remove(fullPath)
+			}
+		}
+	}
 }
