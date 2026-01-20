@@ -27,7 +27,11 @@ var targetSizes = []struct {
 	{"800x600", 800, 600},
 }
 
-const uploadDir = "./uploads"
+const (
+	uploadDir    = "./uploads"
+	TriggerRegen = ".trigger_regenerate"
+	TriggerGC    = ".trigger_gc"
+)
 
 var forceRegen bool
 
@@ -194,6 +198,29 @@ func startWatcher() {
 					return
 				}
 
+				baseName := filepath.Base(event.Name)
+				// --- SPECIAL TRIGGERS ---
+				if baseName == TriggerGC {
+					if event.Op&fsnotify.Create == fsnotify.Create {
+						fmt.Println("\n>>> TRIGGER RECEIVED: Garbage Collection")
+						// Give the OS a moment to release the lock on the trigger file
+						time.Sleep(100 * time.Millisecond)
+						runGarbageCollector()
+						os.Remove(event.Name) // Delete trigger file
+					}
+					continue
+				}
+
+				if baseName == TriggerRegen {
+					if event.Op&fsnotify.Create == fsnotify.Create {
+						fmt.Println("\n>>> TRIGGER RECEIVED: Regeneration")
+						time.Sleep(100 * time.Millisecond)
+						performRegeneration()
+						os.Remove(event.Name) // Delete trigger file
+					}
+					continue
+				}
+				// ------------------------
 				if strings.Contains(event.Name, "320x200") || strings.Contains(event.Name, "800x600") {
 					continue
 				}
