@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Edit, Download, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton, FileIcon, MediaPreviewOverlay } from '@/components';
-import { formatFileSize, getThumbnailUrl, isImageFile, isVideoFile } from '@/utils/fileUtils';
+import { formatFileSize, getMediaUrl, getThumbnailUrl, isImageFile, isVideoFile } from '@/utils/fileUtils';
+// import ReactJsonView from '@microlink/react-json-view'
 import styles from './index.module.scss';
 import clsx from 'clsx';
 
@@ -16,6 +17,7 @@ export default function MediaCard({
 
     const isPreviewable = isImageFile(media.mime_type) || isVideoFile(media.mime_type);
     const thumbUrl = getThumbnailUrl(media);
+    const mediaUrl = getMediaUrl(media);
 
     const navigate = useNavigate();
     const handleEdit = () => {
@@ -32,6 +34,9 @@ export default function MediaCard({
         }
     };
 
+    const handlePreview = (media) => {
+        setShowPreview(true);
+    };
     const handleDownload = (media) => {
         window.open(
             import.meta.env.VITE_API_BASE_URL.replace("/api", "") + media.url,
@@ -51,13 +56,15 @@ export default function MediaCard({
                         {isPreviewable ? (
                             isImageFile(media.mime_type) ? (
                                 <img
+                                    onClick={() => handlePreview(media)}
                                     src={thumbUrl}
                                     alt={media.filename}
                                     className={styles.largeThumb}
                                 />
                             ) : (
                                 <video
-                                    src={thumbUrl}
+                                    onClick={() => handlePreview(media)}
+                                    src={mediaUrl}
                                     className={styles.largeThumb}
                                 />
                             )
@@ -123,6 +130,7 @@ export default function MediaCard({
                     onClose={() => setShowPreview(false)}
                 />
             )}
+            {/* <ReactJsonView src={media} /> */}
         </>
     );
 }

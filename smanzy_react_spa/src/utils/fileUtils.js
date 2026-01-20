@@ -18,14 +18,34 @@ export const formatFileSize = (bytes) => {
  * @returns {string}
  */
 export const getThumbnailUrl = (media) => {
+    // If thumbnail_url is available, return it
+    if (media?.thumbnail_url) {
+        if (media.thumbnail_url.startsWith('http://') || media.thumbnail_url.startsWith('https://')) {
+            return media.thumbnail_url;
+        }
+        // Otherwise, prepend the API base URL for relative paths
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+        const baseUrl = apiBaseUrl.replace('/api', '');
+        return baseUrl + media.thumbnail_url;
+    }
+    // If thumbnail_url is not available, return the URL
     if (!media?.url) return '';
-
     // If URL is already absolute (starts with http:// or https://), return as-is
     if (media.url.startsWith('http://') || media.url.startsWith('https://')) {
         return media.url;
     }
 
     // Otherwise, prepend the API base URL for relative paths
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    const baseUrl = apiBaseUrl.replace('/api', '');
+    return baseUrl + media.url;
+};
+
+export const getMediaUrl = (media) => {
+    if (!media?.url) return '';
+    if (media.url.startsWith('http://') || media.url.startsWith('https://')) {
+        return media.url;
+    }
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
     const baseUrl = apiBaseUrl.replace('/api', '');
     return baseUrl + media.url;
