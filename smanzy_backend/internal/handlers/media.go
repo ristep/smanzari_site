@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -16,9 +17,11 @@ import (
 
 // MediaHandler handles media-related HTTP requests
 type MediaHandler struct {
-	conn      *sql.DB
-	queries   *db.Queries
-	uploadDir string
+	conn             *sql.DB
+	queries          *db.Queries
+	uploadDir        string
+	mediaBaseURL     string
+	thumbnailBaseURL string
 }
 
 // NewMediaHandler creates a new media handler
@@ -26,8 +29,19 @@ func NewMediaHandler(conn *sql.DB, queries *db.Queries) *MediaHandler {
 	// Allow configuring upload directory via environment variable.
 	// In containers, prefer an absolute path like /app/uploads.
 	uploadDir := os.Getenv("UPLOAD_DIR")
+	mediaBaseURL := os.Getenv("MEDIA_BASE_URL")
+
 	if uploadDir == "" {
 		uploadDir = "./uploads"
+	}
+
+	if mediaBaseURL == "" {
+		mediaBaseURL = "/api/media/files/"
+	}
+
+	thumbnailBaseURL := os.Getenv("THUMBNAIL_BASE_URL")
+	if thumbnailBaseURL == "" {
+		thumbnailBaseURL = "/api/media/thumbnails/"
 	}
 
 	// Ensure upload directory exists (fail loudly if it cannot be created)
@@ -36,12 +50,26 @@ func NewMediaHandler(conn *sql.DB, queries *db.Queries) *MediaHandler {
 	}
 
 	fmt.Printf("Media uploads directory: %s\n", uploadDir)
+	fmt.Printf("Media base URL: %s\n", mediaBaseURL)
 
 	return &MediaHandler{
-		conn:      conn,
-		queries:   queries,
-		uploadDir: uploadDir,
+		conn:             conn,
+		queries:          queries,
+		uploadDir:        uploadDir,
+		mediaBaseURL:     mediaBaseURL,
+		thumbnailBaseURL: thumbnailBaseURL,
 	}
+}
+
+// GenThumbnailURL generates thumbnail URL
+func (mh *MediaHandler) GenThumbnailURL(storedName string, size string) string {
+	baseName := strings.TrimSuffix(storedName, filepath.Ext(storedName))
+	return mh.thumbnailBaseURL + size + "/" + baseName + ".jpg"
+}
+
+// GenMediaURL generates media URL
+func (mh *MediaHandler) GenMediaURL(storedName string) string {
+	return mh.mediaBaseURL + storedName
 }
 
 // UploadHandler handles file uploads
@@ -76,7 +104,6 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 	mediaRow, err := mh.queries.CreateMedia(c.Request.Context(), db.CreateMediaParams{
 		Filename:   file.Filename,
 		StoredName: uniqueName,
-		Url:        "/api/media/files/" + uniqueName,
 		Type:       sql.NullString{String: "file", Valid: true},
 		MimeType:   sql.NullString{String: file.Header.Get("Content-Type"), Valid: true},
 		Size:       file.Size,
@@ -92,16 +119,17 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 
 	// Map to model
 	apiMedia := models.Media{
-		ID:         uint(mediaRow.ID),
-		Filename:   mediaRow.Filename,
-		StoredName: mediaRow.StoredName,
-		URL:        mediaRow.Url,
-		Type:       mediaRow.Type,
-		MimeType:   mediaRow.MimeType,
-		Size:       mediaRow.Size,
-		UserID:     uint(mediaRow.UserID),
-		CreatedAt:  mediaRow.CreatedAt,
-		UpdatedAt:  mediaRow.UpdatedAt,
+		ID:           uint(mediaRow.ID),
+		Filename:     mediaRow.Filename,
+		StoredName:   mediaRow.StoredName,
+		URL:          mh.GenMediaURL(mediaRow.StoredName),
+		ThumbnailURL: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
+		Type:         mediaRow.Type,
+		MimeType:     mediaRow.MimeType,
+		Size:         mediaRow.Size,
+		UserID:       uint(mediaRow.UserID),
+		CreatedAt:    mediaRow.CreatedAt,
+		UpdatedAt:    mediaRow.UpdatedAt,
 	}
 
 	c.JSON(http.StatusCreated, SuccessResponse{Data: apiMedia})
@@ -153,16 +181,17 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 	// userRow, _ := mh.queries.GetUserByID(c.Request.Context(), mediaRow.UserID)
 
 	apiMedia := models.Media{
-		ID:         uint(mediaRow.ID),
-		Filename:   mediaRow.Filename,
-		StoredName: mediaRow.StoredName,
-		URL:        mediaRow.Url,
-		Type:       mediaRow.Type,
-		MimeType:   mediaRow.MimeType,
-		Size:       mediaRow.Size,
-		UserID:     uint(mediaRow.UserID),
-		CreatedAt:  mediaRow.CreatedAt,
-		UpdatedAt:  mediaRow.UpdatedAt,
+		ID:           uint(mediaRow.ID),
+		Filename:     mediaRow.Filename,
+		StoredName:   mediaRow.StoredName,
+		URL:          mh.GenMediaURL(mediaRow.StoredName),
+		ThumbnailURL: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
+		Type:         mediaRow.Type,
+		MimeType:     mediaRow.MimeType,
+		Size:         mediaRow.Size,
+		UserID:       uint(mediaRow.UserID),
+		CreatedAt:    mediaRow.CreatedAt,
+		UpdatedAt:    mediaRow.UpdatedAt,
 	}
 
 	c.JSON(http.StatusOK, SuccessResponse{Data: apiMedia})
@@ -190,6 +219,47 @@ func (mh *MediaHandler) ServeFileHandler(c *gin.Context) {
 	}
 
 	c.File(filePath)
+}
+
+// ServeThumbnailHandler serves thumbnail files from subdirectories
+func (mh *MediaHandler) ServeThumbnailHandler(c *gin.Context) {
+	size := c.Param("size")
+	name := c.Param("name")
+
+	// Validate size parameter to prevent path traversal
+	if size == "" || name == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid parameters"})
+		return
+	}
+
+	// Only allow known thumbnail sizes
+	allowedSizes := map[string]bool{
+		"320x200": true,
+		"800x600": true,
+	}
+	if !allowedSizes[size] {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid thumbnail size"})
+		return
+	}
+
+	// Validate filename is just a basename
+	if filepath.Base(name) != name {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "Invalid filename"})
+		return
+	}
+
+	// Construct the full path to the thumbnail file
+	thumbnailPath := filepath.Join(mh.uploadDir, size, name)
+
+	if _, err := os.Stat(thumbnailPath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, ErrorResponse{Error: "Thumbnail not found"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Error: "Filesystem error"})
+		return
+	}
+
+	c.File(thumbnailPath)
 }
 
 // ListPublicMediasHandler returns a paginated list of medias for public consumption
@@ -220,19 +290,20 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 	var medias []models.Media
 	for _, row := range mediaRows {
 		medias = append(medias, models.Media{
-			ID:         uint(row.ID),
-			Filename:   row.Filename,
-			StoredName: row.StoredName,
-			URL:        row.Url,
-			Type:       row.Type,
-			MimeType:   row.MimeType,
-			Size:       row.Size,
-			UserID:     uint(row.UserID),
-			UserName:   row.UserName,
-			UserTel:    row.UserTel.String,
-			UserEmail:  row.UserEmail,
-			CreatedAt:  row.CreatedAt,
-			UpdatedAt:  row.UpdatedAt,
+			ID:           uint(row.ID),
+			Filename:     row.Filename,
+			StoredName:   row.StoredName,
+			URL:          mh.GenMediaURL(row.StoredName),
+			ThumbnailURL: mh.GenThumbnailURL(row.StoredName, "320x200"),
+			Type:         row.Type,
+			MimeType:     row.MimeType,
+			Size:         row.Size,
+			UserID:       uint(row.UserID),
+			UserName:     row.UserName,
+			UserTel:      row.UserTel.String,
+			UserEmail:    row.UserEmail,
+			CreatedAt:    row.CreatedAt,
+			UpdatedAt:    row.UpdatedAt,
 		})
 	}
 
@@ -242,6 +313,10 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 		"limit":  limit,
 		"offset": offset,
 	}})
+}
+
+func GenMediaURL(s string) {
+	panic("unimplemented")
 }
 
 // UpdateMediaRequest represents payload for updating media
@@ -320,8 +395,8 @@ func (mh *MediaHandler) UpdateMediaHandler(c *gin.Context) {
 
 			// Update row values
 			// Note: We need a specialized query for this or use conn.Exec
-			_, _ = mh.conn.ExecContext(c.Request.Context(), "UPDATE media SET stored_name = $2, url = $3, mime_type = $4, size = $5 WHERE id = $1",
-				mediaRow.ID, uniqueName, "/api/media/files/"+uniqueName, file.Header.Get("Content-Type"), file.Size)
+			_, _ = mh.conn.ExecContext(c.Request.Context(), "UPDATE media SET stored_name = $2, mime_type = $3, size = $4 WHERE id = $1",
+				mediaRow.ID, uniqueName, file.Header.Get("Content-Type"), file.Size)
 		}
 	}
 

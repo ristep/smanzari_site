@@ -155,6 +155,11 @@ func main() {
 		// Serve uploaded files directly (for development)
 		// :name is a path parameter that captures the filename
 		api.GET("/media/files/:name", mediaHandler.ServeFileHandler)
+
+		// Serve thumbnail files
+		// :size is the thumbnail size (e.g., 320x200, 800x600)
+		// :name is the filename
+		api.GET("/media/thumbnails/:size/:name", mediaHandler.ServeThumbnailHandler)
 	}
 
 	// == PROTECTED ROUTES ==

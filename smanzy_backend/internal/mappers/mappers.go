@@ -3,6 +3,7 @@ package mappers
 import (
 	"database/sql"
 	"encoding/json"
+	"path/filepath"
 
 	"github.com/ristep/smanzy_backend/internal/db"
 	"github.com/ristep/smanzy_backend/internal/models"
@@ -111,84 +112,90 @@ func MediaRowToModel(row interface{}) models.Media {
 	switch r := row.(type) {
 	case db.GetMediaByIDRow:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type,
-			MimeType:   r.MimeType,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type,
+			MimeType:     r.MimeType,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	case db.ListPublicMediaRow:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type,
-			MimeType:   r.MimeType,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			UserName:   r.UserName,
-			UserTel:    r.UserTel.String,
-			UserEmail:  r.UserEmail, // Add this field
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type,
+			MimeType:     r.MimeType,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			UserName:     r.UserName,
+			UserTel:      r.UserTel.String,
+			UserEmail:    r.UserEmail, // Add this field
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	case db.ListUserMediaRow:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type,
-			MimeType:   r.MimeType,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type,
+			MimeType:     r.MimeType,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	case db.CreateMediaRow:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type,
-			MimeType:   r.MimeType,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type,
+			MimeType:     r.MimeType,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	case db.UpdateMediaRow:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type,
-			MimeType:   r.MimeType,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type,
+			MimeType:     r.MimeType,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	case db.Medium:
 		return models.Media{
-			ID:         uint(r.ID),
-			Filename:   r.Filename,
-			StoredName: r.StoredName,
-			URL:        r.Url,
-			Type:       r.Type.String,
-			MimeType:   r.MimeType.String,
-			Size:       r.Size,
-			UserID:     uint(r.UserID),
-			CreatedAt:  r.CreatedAt,
-			UpdatedAt:  r.UpdatedAt,
+			ID:           uint(r.ID),
+			Filename:     r.Filename,
+			StoredName:   r.StoredName,
+			URL:          "/api/media/files/" + r.StoredName,
+			ThumbnailURL: "/api/media/files/320x200/" + r.StoredName[:len(r.StoredName)-len(filepath.Ext(r.StoredName))] + ".jpg",
+			Type:         r.Type.String,
+			MimeType:     r.MimeType.String,
+			Size:         r.Size,
+			UserID:       uint(r.UserID),
+			CreatedAt:    r.CreatedAt,
+			UpdatedAt:    r.UpdatedAt,
 		}
 	default:
 		return models.Media{}

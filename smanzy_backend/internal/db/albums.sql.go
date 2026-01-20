@@ -93,7 +93,7 @@ func (q *Queries) GetAlbumByID(ctx context.Context, id int64) (Album, error) {
 }
 
 const getAlbumMedia = `-- name: GetAlbumMedia :many
-SELECT m.id, m.filename, m.stored_name, m.url, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at FROM media m
+SELECT m.id, m.filename, m.stored_name, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at FROM media m
 JOIN album_media am ON am.media_id = m.id
 WHERE am.album_id = $1 AND m.deleted_at IS NULL
 `
@@ -111,7 +111,6 @@ func (q *Queries) GetAlbumMedia(ctx context.Context, albumID int64) ([]Medium, e
 			&i.ID,
 			&i.Filename,
 			&i.StoredName,
-			&i.Url,
 			&i.Type,
 			&i.MimeType,
 			&i.Size,
@@ -140,7 +139,7 @@ SELECT a.id, a.title, a.description, a.user_id, a.is_public, a.is_shared, a.crea
             SELECT json_agg(row_to_json(media_sub))
             FROM (
                 SELECT
-                    m.id, m.filename, m.stored_name, m.url, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at
+                    m.id, m.filename, m.stored_name, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at
                 FROM media m
                 JOIN album_media am ON am.media_id = m.id
                 WHERE am.album_id = a.id
@@ -213,7 +212,7 @@ SELECT
             SELECT json_agg(row_to_json(media_sub))
             FROM (
                 SELECT
-                    m.id, m.filename, m.stored_name, m.url, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at
+                    m.id, m.filename, m.stored_name, m.type, m.mime_type, m.size, m.user_id, m.created_at, m.updated_at, m.deleted_at
                 FROM media m
                 JOIN album_media am ON am.media_id = m.id
                 WHERE am.album_id = a.id

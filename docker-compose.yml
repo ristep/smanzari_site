@@ -10,7 +10,6 @@ services:
       POSTGRES_DB: "${POSTGRES_DB}"
     restart: unless-stopped
     volumes:
-      # CHANGED: Now points to a local folder
       - ./smanzy_data/postgres:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
@@ -35,13 +34,13 @@ services:
       JWT_SECRET: "${JWT_SECRET}"
       SERVER_PORT: "8080"
       UPLOAD_DIR: "/app/uploads"
+      MEDIA_BASE_URL: "/api/media/files/"
       GIN_MODE: "release"
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
-      # CHANGED: Now points to a local folder
       - ./smanzy_data/uploads:/app/uploads
     ports:
       - "127.0.0.1:8080:8080"
@@ -73,6 +72,24 @@ services:
       start_period: 10s
     networks:
       - smanzy_network
+
+  # NEW SERVICE
+  thumbnailer:
+    build:
+      context: ./smanzy_thumbgen
+      dockerfile: Dockerfile
+    container_name: smanzy_thumbnailer
+    restart: unless-stopped
+    command: [ "./thumbgen", "-regenerate" ]
+    volumes:
+      # Maps local uploads to /app/uploads so the Go watcher sees them
+      - ./smanzy_data/uploads:/app/uploads
+    environment:
+      - UPLOAD_DIR=/app/uploads
+    networks:
+      - smanzy_network
+    depends_on:
+      - backend
 
 networks:
   smanzy_network:

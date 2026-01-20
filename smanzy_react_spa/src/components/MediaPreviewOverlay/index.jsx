@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { isImageFile, getThumbnailUrl } from "@/utils/fileUtils";
+import { isImageFile, getThumbnailUrl, getMediaUrl } from "@/utils/fileUtils";
 import styles from "./index.module.scss";
 
 const MediaPreviewOverlay = ({ media, onClose }) => {
@@ -29,7 +29,8 @@ const MediaPreviewOverlay = ({ media, onClose }) => {
 
   if (!media) return null;
 
-  const thumbUrl = getThumbnailUrl(media);
+  // const thumbUrl = getThumbnailUrl(media);
+  const mediaUrl = getMediaUrl(media);
   const isImage = isImageFile(media.mime_type);
 
   const overlayContent = (
@@ -48,13 +49,13 @@ const MediaPreviewOverlay = ({ media, onClose }) => {
         </button>
         {isImage ? (
           <img
-            src={thumbUrl}
+            src={mediaUrl}
             alt={media.filename}
             className={styles.largeImage}
           />
         ) : (
           <video
-            src={thumbUrl}
+            src={mediaUrl}
             className={styles.largeVideo}
             controls
             autoPlay

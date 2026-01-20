@@ -1,6 +1,6 @@
 -- name: GetMediaByID :one
 SELECT
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -13,7 +13,7 @@ LIMIT 1;
 
 -- name: ListPublicMedia :many
 SELECT
-    m.id, m.filename, m.stored_name, m.url,
+    m.id, m.filename, m.stored_name,
     COALESCE(m.type, '') as type,
     COALESCE(m.mime_type, '') as mime_type,
     m.size, m.user_id,
@@ -35,7 +35,7 @@ WHERE deleted_at IS NULL;
 
 -- name: ListUserMedia :many
 SELECT
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -48,15 +48,15 @@ ORDER BY created_at DESC;
 
 -- name: CreateMedia :one
 INSERT INTO media (
-    filename, stored_name, url, type, mime_type, size, user_id,
+    filename, stored_name, type, mime_type, size, user_id,
     created_at, updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7,
+    $1, $2, $3, $4, $5, $6,
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT,
     (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 )
 RETURNING
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
@@ -74,7 +74,7 @@ SET
     updated_at = (EXTRACT(EPOCH FROM NOW()) * 1000)::BIGINT
 WHERE id = $1
 RETURNING
-    id, filename, stored_name, url,
+    id, filename, stored_name,
     COALESCE(type, '') as type,
     COALESCE(mime_type, '') as mime_type,
     size, user_id,
