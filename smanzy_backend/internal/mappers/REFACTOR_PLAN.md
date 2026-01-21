@@ -10,9 +10,9 @@ Media URLs and thumbnail paths are hardcoded within the `MediaRowToModel` functi
 Move this logic into dedicated helper functions or a separate service. This creates a single source of truth for URL structures and makes it easier to change storage strategies (e.g., switching to S3 or a CDN) in the future.
 
 **Action:**
-- Create `GetMediaURL(storedName string) string`
-- Create `GetThumbnailURL(storedName string) string`
-- Use these helpers inside the mappers.
+- [x] Create `GetMediaURL(storedName string) string`
+- [x] Create `GetThumbnailURL(storedName string) string`
+- [x] Use these helpers inside the mappers.
 
 ## 2. Split `mappers.go` File
 **Current State:**
@@ -22,10 +22,10 @@ All mapper functions for Users, Media, and Albums are contained in a single `map
 Split the file into domain-specific files to improve navigation and readability.
 
 **Action:**
-- `user_mappers.go`: `UserRowToModel` and related helpers.
-- `media_mappers.go`: `MediaRowToModel` and related helpers.
-- `album_mappers.go`: `AlbumRowToModel` and related helpers.
-- `helpers.go`: Generic helpers like `NullStringToString`.
+- [x] `user_mappers.go`: `UserRowToModel` and related helpers.
+- [x] `media_mappers.go`: `MediaRowToModel` and related helpers.
+- [x] `album_mappers.go`: `AlbumRowToModel` and related helpers.
+- [x] `helpers.go`: Generic helpers like `NullStringToString`.
 
 ## 3. Reduce Repetition in Struct Instantiation
 **Current State:**
@@ -35,16 +35,16 @@ The `switch` statements contain highly repetitive code blocks where the same fie
 While `sqlc` generates distinct types preventing direct type unification, we can reduce visual clutter and potential bugs (updating one case but forgetting another) by using specific "constructor" helpers for the domain models if they share the exact same signature.
 
 **Action:**
-- Identify exact matches in field mapping.
-- Evaluate creating internal helper functions (e.g., `mapBaseMediaFields(...)`) to populate common fields, though care must be taken not to create functions with excessive argument lists (parameter objects might be overkill here).
+- [ ] Identify exact matches in field mapping.
+- [ ] Evaluate creating internal helper functions (e.g., `mapBaseMediaFields(...)`) to populate common fields, though care must be taken not to create functions with excessive argument lists (parameter objects might be overkill here).
 
 ## 4. Standardize Null Handling
 **Current State:**
 Helper functions like `NullStringToString` exist but should be consistently applied across all mappers to ensure safety against nil pointers or invalid SQL null types.
 
 **Action:**
-- Audit all assignments involving nullable fields (e.g., `Description`, `DeletedAt`).
-- Ensure `Null*` helpers are used exclusively instead of direct `.Valid` checks where possible to clean up the code.
+- [x] Audit all assignments involving nullable fields (e.g., `Description`, `DeletedAt`).
+- [x] Ensure `Null*` helpers are used exclusively instead of direct `.Valid` checks where possible to clean up the code.
 
 ## 5. Review `sqlc` Configuration
 **Current State:**
