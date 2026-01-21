@@ -7,8 +7,6 @@ WORKDIR /app
 
 # Copy package files first (for better layer caching)
 COPY package.json yarn.lock .yarnrc.yml ./
-# remove next line for production and build yarn deps inside the container
-COPY .yarn .yarn
 
 # Install dependencies
 RUN yarn install --immutable
