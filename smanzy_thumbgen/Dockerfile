@@ -17,4 +17,7 @@ RUN apk add --no-cache ffmpeg
 COPY --from=builder /app/thumbgen .
 RUN mkdir -p /app/uploads/320x200 /app/uploads/800x600
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD sh -c 'test -d /app/uploads && touch /app/uploads/.healthcheck && rm /app/uploads/.healthcheck || exit 1'
+
 CMD ["./thumbgen"]
