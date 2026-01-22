@@ -12,7 +12,7 @@ services:
     volumes:
       - ./smanzy_data/postgres:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,7 +28,7 @@ services:
     container_name: smanzy_backend
     env_file:
       - .env
-    command: [ "./server", "-migrate" ]
+    command: ["./server", "-migrate"]
     environment:
       DB_DSN: "host=postgres user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} dbname=${POSTGRES_DB} port=5432 sslmode=disable"
       JWT_SECRET: "${JWT_SECRET}"
@@ -45,7 +45,15 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health" ]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -65,7 +73,15 @@ services:
     ports:
       - "127.0.0.1:3000:80"
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/" ]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:80/",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -80,16 +96,28 @@ services:
       dockerfile: Dockerfile
     container_name: smanzy_thumbnailer
     restart: unless-stopped
-    command: [ "./thumbgen", "-regenerate" ]
+    # Run in persistent watcher mode
+    command: ["./thumbgen"]
     volumes:
       # Maps local uploads to /app/uploads so the Go watcher sees them
       - ./smanzy_data/uploads:/app/uploads
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "test -d /app/uploads && touch /app/uploads/.healthcheck && rm /app/uploads/.healthcheck || exit 1",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     environment:
       - UPLOAD_DIR=/app/uploads
     networks:
       - smanzy_network
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 networks:
   smanzy_network:

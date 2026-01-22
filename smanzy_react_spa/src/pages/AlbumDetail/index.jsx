@@ -5,10 +5,13 @@ import { Plus, Edit, Save, File, ArrowLeft } from 'lucide-react';
 import api from '@/services/api';
 import Button from '@/components/Button';
 import Panel from '@/components/Panel';
-import MediaCard from '@/components/MediaCard';
+import VirtualMediaGrid from '@/components/VirtualMediaGrid';
+import LazyImage from '@/components/LazyImage';
 import { formatDate } from '@/utils/dateFormat';
 import styles from './index.module.scss';
 import clsx from 'clsx';
+import { getThumbnailUrl } from '@/utils/fileUtils';
+import MediaPreviewOverlay from '@/components/MediaPreviewOverlay';
 
 export default function AlbumDetail() {
     const { id } = useParams();
@@ -20,6 +23,7 @@ export default function AlbumDetail() {
     const [editFormData, setEditFormData] = useState({ title: '', description: '' });
     const [showAddMediaForm, setShowAddMediaForm] = useState(false);
     const [mediaSearch, setMediaSearch] = useState('');
+    const [previewMedia, setPreviewMedia] = useState(null);
 
     // Fetch album details
     const { isPending: albumPending, error: albumError, data: album } = useQuery({
@@ -97,12 +101,6 @@ export default function AlbumDetail() {
             alert('Failed to remove media: ' + (err.response?.data?.error || err.message));
         },
     });
-
-    const getThumbnailUrl = (path) => {
-        if (!path) return '';
-        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
-        return baseUrl + path;
-    };
 
     const isMediaInAlbum = (mediaId) => {
         return albumMedia.some(m => m.id === mediaId);
@@ -244,10 +242,15 @@ export default function AlbumDetail() {
                                             filteredMedia.map(media => {
                                                 const alreadyIn = isMediaInAlbum(media.id);
                                                 return (
-                                                    <div key={media.id} className={clsx(styles.libraryItem, alreadyIn && styles.disabled)}>
-                                                        <div className={styles.itemThumb}>
+                                                    <div key={media.id} className={clsx(styles.libraryItem)}>
+                                                        <div className={styles.itemThumb} >
                                                             {media.mime_type.startsWith('image/') ? (
-                                                                <img src={getThumbnailUrl(media.url)} alt="" />
+                                                                <LazyImage
+                                                                    src={getThumbnailUrl(media)}
+                                                                    alt=""
+                                                                    className={styles.itemThumbImage}
+                                                                    onClick={() => setPreviewMedia(media)}
+                                                                />
                                                             ) : (
                                                                 <div className={styles.fileIcon}><File size={20} /></div>
                                                             )}
@@ -272,17 +275,13 @@ export default function AlbumDetail() {
                             )}
 
                             {albumMedia && albumMedia.length > 0 ? (
-                                <div className={styles.enhancedMediaGrid}>
-                                    {albumMedia.map(media => (
-                                        <MediaCard
-                                            key={media.id}
-                                            media={media}
-                                            onDelete={(m) => removeMediaMutation.mutate(m.id)}
-                                            canManage={true}
-                                            canView={true}
-                                        />
-                                    ))}
-                                </div>
+                                <VirtualMediaGrid
+                                    mediaItems={albumMedia}
+                                    onDelete={(m) => removeMediaMutation.mutate(m.id)}
+                                    canManage={true}
+                                    canView={true}
+                                    threshold={100}
+                                />
                             ) : (
                                 <div className={styles.emptyMessage}>
                                     <p>{mediaPending ? 'Loading media...' : 'This album is empty. Add media from your library!'}</p>
@@ -292,6 +291,13 @@ export default function AlbumDetail() {
                     )}
                 </div>
             </Panel>
+
+            {previewMedia && (
+                <MediaPreviewOverlay
+                    media={previewMedia}
+                    onClose={() => setPreviewMedia(null)}
+                />
+            )}
         </div>
     );
 }

@@ -68,3 +68,20 @@ export const isImageFile = (mimeType) => {
 export const isVideoFile = (mimeType) => {
     return mimeType?.startsWith('video/');
 };
+
+/**
+ * Get thumbnail URL with specific size preference
+ * Currently returns the same as getThumbnailUrl, but provides
+ * a hook for future backend support of multiple thumbnail sizes
+ * @param {Object} media - Media object
+ * @param {string} size - 'small' (150px), 'medium' (300px), 'large' (600px)
+ * @returns {string}
+ */
+export const getThumbnailUrlWithSize = (media, size = 'medium') => {
+    // Future enhancement: if backend supports size parameters
+    // const sizeMap = { small: 150, medium: 300, large: 600 };
+    // return getThumbnailUrl(media) + `?size=${sizeMap[size]}`;
+
+    // For now, return standard thumbnail
+    return getThumbnailUrl(media);
+};

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Edit, Download, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { IconButton, FileIcon, MediaPreviewOverlay } from '@/components';
+import LazyImage from '@/components/LazyImage';
 import { formatFileSize, getMediaUrl, getThumbnailUrl, isImageFile, isVideoFile } from '@/utils/fileUtils';
 // import ReactJsonView from '@microlink/react-json-view'
 import styles from './index.module.scss';
@@ -55,7 +56,7 @@ export default function MediaCard({
                     >
                         {isPreviewable ? (
                             isImageFile(media.mime_type) ? (
-                                <img
+                                <LazyImage
                                     onClick={() => handlePreview(media)}
                                     src={thumbUrl}
                                     alt={media.filename}

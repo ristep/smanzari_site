@@ -1,6 +1,6 @@
 # Smanzy React SPA
 
-A modern Single Page Application (SPA) built with React, Vite, and Tailwind CSS. This serves as the frontend for the Smanzy application, interacting with the Go backend.
+A modern Single Page Application (SPA) built with React, Vite, and Sass (SCSS). This serves as the frontend for the Smanzy application and interacts with the Go backend. Yarn is the recommended package manager for development (npm also works).
 
 ## 🚀 Tech Stack
 
@@ -8,13 +8,13 @@ A modern Single Page Application (SPA) built with React, Vite, and Tailwind CSS.
 - **[React](https://react.dev/)**: The library for web and native user interfaces
 - **[React Router](https://reactrouter.com/)**: Client-side routing
 - **[TanStack Query](https://tanstack.com/query/latest)**: Powerful asynchronous state management
-- **[Tailwind CSS](https://tailwindcss.com/)**: Utility-first CSS framework
+- **Sass (SCSS)**: Styles written in SCSS and compiled at build time (uses the `sass` package)
 - **[Axios](https://axios-http.com/)**: Promise based HTTP client
 
 ## 🛠️ Prerequisites
 
 - Node.js (v18 or higher recommended)
-- npm (comes with Node.js)
+- Yarn (recommended) — this project uses Yarn for installs and builds; npm also works
 
 ## 📦 Installation
 
@@ -25,17 +25,17 @@ A modern Single Page Application (SPA) built with React, Vite, and Tailwind CSS.
     ```
 
 2. Install dependencies:
-
+ 
     ```bash
-    npm install
+    yarn install
     ```
 
 ## 🏃‍♂️ Development
 
 To start the development server with Hot Module Replacement (HMR):
-
+ 
 ```bash
-npm run dev
+yarn dev
 ```
 
 The application will be available at `http://localhost:5173`.
@@ -45,44 +45,58 @@ The application will be available at `http://localhost:5173`.
 To build the application for production:
 
 ```bash
-npm run build
+yarn build
 ```
 
 This will generate a `dist` directory with optimized assets ready for deployment.
 
 To preview the production build locally:
+ 
+```bash
+yarn preview
+```
+
+Useful scripts:
 
 ```bash
-npm run preview
+# Lint JavaScript/JSX
+yarn lint
+
+# Check SCSS files for style issues
+yarn check:scss
 ```
 
 ## 📂 Project Structure
 
 ```text
 src/
-├── components/     # Reusable UI components (Navbar, Footer, etc.)
-├── hooks/          # Custom React hooks
+├── assets/         # Static assets (images, icons)
+├── components/     # Reusable UI components
+├── context/        # React context providers
 ├── layout/         # Layout wrapper components
-├── pages/          # Page components (Home, Login, Profile, etc.)
+├── pages/          # Page components (Home, Media Manager, etc.)
 ├── routes/         # Routing configuration
-├── services/       # API services (Axios instance)
+├── services/       # API services (Axios instance and interceptors)
+├── styles/         # Global and component SCSS files
+├── utils/          # Utilities and helpers
 ├── App.jsx         # Root component and provider setup
-└── main.jsx        # Application entry point
+├── main.jsx        # Application entry point
+└── version.js      # Frontend version info
 ```
 
 ## 🔑 Environment Variables
 
-Create a `.env` file in the root directory to configure the application.
-
+Create a `.env` file in the root directory (or copy `.env.example`) to configure the application.
+ 
 ```ini
-# Base URL for the backend API
+# Base URL for the backend API (include /api if your backend exposes the API at that prefix)
 VITE_API_BASE_URL=http://localhost:8080/api
 ```
 
 ## 🔌 API Integration
 
 The application uses a centralized API client in `src/services/api.js`. It automatically handles:
-
-- Base URL configuration via environment variables.
-- Attaching the JWT `Authorization` header to requests if a token exists in `localStorage`.
-- Basic error interception (e.g. 401 Unauthorized handling).
+ 
+- Base URL configuration via environment variables (`VITE_API_BASE_URL`).
+- Attaching the JWT `Authorization` header to requests if a token exists in `localStorage` (key: `token`).
+- A refresh-token flow: on 401 the client attempts `POST /auth/refresh` using `refresh_token` from `localStorage`; if refresh succeeds tokens are updated, otherwise auth is cleared and the user is redirected to `/login`.
