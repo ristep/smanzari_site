@@ -13,10 +13,14 @@ func GetMediaURL(storedName string) string {
 
 // GetThumbnailURL constructs the public URL for a media thumbnail.
 // It assumes the thumbnail format is JPEG.
-func GetThumbnailURL(storedName string) string {
+// second is optional
+func GetThumbnailURL(storedName string, size string) string {
 	ext := filepath.Ext(storedName)
 	nameWithoutExt := strings.TrimSuffix(storedName, ext)
-	return "/api/media/thumbnails/320x200/" + nameWithoutExt + ".jpg"
+	if size == "" {
+		size = "320x200"
+	}
+	return "/api/media/" + size + "/" + nameWithoutExt + ".jpg"
 }
 
 // NullStringToString safely converts sql.NullString to string.

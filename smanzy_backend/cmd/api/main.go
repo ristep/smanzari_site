@@ -145,21 +145,22 @@ func main() {
 			auth.POST("/refresh", authHandler.RefreshHandler)
 		}
 
-		// Public media listing
-		api.GET("/media", mediaHandler.ListPublicMediasHandler)
-
 		// Public video endpoints
 		api.GET("/videos", videoHandler.ListVideosHandler)
 		api.GET("/videos/:id", videoHandler.GetVideoHandler)
+
+		// Public media listing
+		api.GET("/media", mediaHandler.ListPublicMediasHandler)
 
 		// Serve uploaded files directly (for development)
 		// :name is a path parameter that captures the filename
 		api.GET("/media/files/:name", mediaHandler.ServeFileHandler)
 
 		// Serve thumbnail files
+		// GET /api/thumbnails/:size/:name
 		// :size is the thumbnail size (e.g., 320x200, 800x600)
 		// :name is the filename
-		api.GET("/media/thumbnails/:size/:name", mediaHandler.ServeThumbnailHandler)
+		api.GET("/thumbnail/:size/:name", mediaHandler.ServeThumbnailHandler)
 	}
 
 	// == PROTECTED ROUTES ==
