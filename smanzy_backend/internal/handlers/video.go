@@ -173,9 +173,9 @@ func (h *VideoHandler) SyncVideosHandler(c *gin.Context) {
 			Likes:        sql.NullInt64{Int64: v.Likes, Valid: true},
 			ThumbnailUrl: sql.NullString{String: v.ThumbnailURL, Valid: true},
 		})
-		if err != nil {
-			errors = append(errors, err)
-		}
+		// if err != nil {
+		// 	errors = append(errors, err)
+		// }
 	}
 
 	c.JSON(http.StatusOK, gin.H{
