@@ -119,20 +119,16 @@ func (mh *MediaHandler) UploadHandler(c *gin.Context) {
 
 	// Map to model
 	apiMedia := models.Media{
-		ID:           uint(mediaRow.ID),
-		Filename:     mediaRow.Filename,
-		StoredName:   mediaRow.StoredName,
-		URL:          mh.GenMediaURL(mediaRow.StoredName),
-		Thumb160x100: mh.GenThumbnailURL(mediaRow.StoredName, "160x100"),
-		Thumb320x200: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
-		Thumb640x400: mh.GenThumbnailURL(mediaRow.StoredName, "640x400"),
-		Thumb800x600: mh.GenThumbnailURL(mediaRow.StoredName, "800x600"),
-		Type:         mediaRow.Type,
-		MimeType:     mediaRow.MimeType,
-		Size:         mediaRow.Size,
-		UserID:       uint(mediaRow.UserID),
-		CreatedAt:    mediaRow.CreatedAt,
-		UpdatedAt:    mediaRow.UpdatedAt,
+		ID:         uint(mediaRow.ID),
+		Filename:   mediaRow.Filename,
+		StoredName: mediaRow.StoredName,
+		URL:        mh.GenMediaURL(mediaRow.StoredName),
+		Type:       mediaRow.Type,
+		MimeType:   mediaRow.MimeType,
+		Size:       mediaRow.Size,
+		UserID:     uint(mediaRow.UserID),
+		CreatedAt:  mediaRow.CreatedAt,
+		UpdatedAt:  mediaRow.UpdatedAt,
 	}
 
 	c.JSON(http.StatusCreated, SuccessResponse{Data: apiMedia})
@@ -184,20 +180,16 @@ func (mh *MediaHandler) GetMediaDetailsHandler(c *gin.Context) {
 	// userRow, _ := mh.queries.GetUserByID(c.Request.Context(), mediaRow.UserID)
 
 	apiMedia := models.Media{
-		ID:           uint(mediaRow.ID),
-		Filename:     mediaRow.Filename,
-		StoredName:   mediaRow.StoredName,
-		URL:          mh.GenMediaURL(mediaRow.StoredName),
-		Thumb160x100: mh.GenThumbnailURL(mediaRow.StoredName, "160x100"),
-		Thumb320x200: mh.GenThumbnailURL(mediaRow.StoredName, "320x200"),
-		Thumb640x400: mh.GenThumbnailURL(mediaRow.StoredName, "640x400"),
-		Thumb800x600: mh.GenThumbnailURL(mediaRow.StoredName, "800x600"),
-		Type:         mediaRow.Type,
-		MimeType:     mediaRow.MimeType,
-		Size:         mediaRow.Size,
-		UserID:       uint(mediaRow.UserID),
-		CreatedAt:    mediaRow.CreatedAt,
-		UpdatedAt:    mediaRow.UpdatedAt,
+		ID:         uint(mediaRow.ID),
+		Filename:   mediaRow.Filename,
+		StoredName: mediaRow.StoredName,
+		URL:        mh.GenMediaURL(mediaRow.StoredName),
+		Type:       mediaRow.Type,
+		MimeType:   mediaRow.MimeType,
+		Size:       mediaRow.Size,
+		UserID:     uint(mediaRow.UserID),
+		CreatedAt:  mediaRow.CreatedAt,
+		UpdatedAt:  mediaRow.UpdatedAt,
 	}
 
 	c.JSON(http.StatusOK, SuccessResponse{Data: apiMedia})
@@ -298,23 +290,19 @@ func (mh *MediaHandler) ListPublicMediasHandler(c *gin.Context) {
 	var medias []models.Media
 	for _, row := range mediaRows {
 		medias = append(medias, models.Media{
-			ID:           uint(row.ID),
-			Filename:     row.Filename,
-			StoredName:   row.StoredName,
-			URL:          mh.GenMediaURL(row.StoredName),
-			Thumb160x100: mh.GenThumbnailURL(row.StoredName, "160x100"),
-			Thumb320x200: mh.GenThumbnailURL(row.StoredName, "320x200"),
-			Thumb640x400: mh.GenThumbnailURL(row.StoredName, "640x400"),
-			Thumb800x600: mh.GenThumbnailURL(row.StoredName, "800x600"),
-			Type:         row.Type,
-			MimeType:     row.MimeType,
-			Size:         row.Size,
-			UserID:       uint(row.UserID),
-			UserName:     row.UserName,
-			UserTel:      row.UserTel.String,
-			UserEmail:    row.UserEmail,
-			CreatedAt:    row.CreatedAt,
-			UpdatedAt:    row.UpdatedAt,
+			ID:         uint(row.ID),
+			Filename:   row.Filename,
+			StoredName: row.StoredName,
+			URL:        mh.GenMediaURL(row.StoredName),
+			Type:       row.Type,
+			MimeType:   row.MimeType,
+			Size:       row.Size,
+			UserID:     uint(row.UserID),
+			UserName:   row.UserName,
+			UserTel:    row.UserTel.String,
+			UserEmail:  row.UserEmail,
+			CreatedAt:  row.CreatedAt,
+			UpdatedAt:  row.UpdatedAt,
 		})
 	}
 
@@ -344,20 +332,16 @@ func (mh *MediaHandler) ListAlbumMediaHandler(c *gin.Context) {
 	var medias []models.Media
 	for _, row := range mediaRows {
 		medias = append(medias, models.Media{
-			ID:           uint(row.ID),
-			Filename:     row.Filename,
-			StoredName:   row.StoredName,
-			URL:          mh.GenMediaURL(row.StoredName),
-			Thumb160x100: mh.GenThumbnailURL(row.StoredName, "160x100"),
-			Thumb320x200: mh.GenThumbnailURL(row.StoredName, "320x200"),
-			Thumb640x400: mh.GenThumbnailURL(row.StoredName, "640x400"),
-			Thumb800x600: mh.GenThumbnailURL(row.StoredName, "800x600"),
-			Type:         row.Type.String,
-			MimeType:     row.MimeType.String,
-			Size:         row.Size,
-			UserID:       uint(row.UserID),
-			CreatedAt:    row.CreatedAt,
-			UpdatedAt:    row.UpdatedAt,
+			ID:         uint(row.ID),
+			Filename:   row.Filename,
+			StoredName: row.StoredName,
+			URL:        mh.GenMediaURL(row.StoredName),
+			Type:       row.Type.String,
+			MimeType:   row.MimeType.String,
+			Size:       row.Size,
+			UserID:     uint(row.UserID),
+			CreatedAt:  row.CreatedAt,
+			UpdatedAt:  row.UpdatedAt,
 		})
 	}
 
