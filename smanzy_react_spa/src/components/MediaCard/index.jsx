@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Edit, Download, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { IconButton, FileIcon, MediaPreviewOverlay } from "@/components";
-import LazyImage from "@/components/LazyImage";
+// import LazyImage from "@/components/LazyImage";
 import {
   formatFileSize,
   getMediaUrl,
@@ -10,7 +10,6 @@ import {
   isImageFile,
   isVideoFile,
 } from "@/utils/fileUtils";
-// import ReactJsonView from '@microlink/react-json-view'
 import styles from "./index.module.scss";
 import clsx from "clsx";
 
@@ -45,11 +44,9 @@ export default function MediaCard({
   const handlePreview = () => {
     setShowPreview(true);
   };
-  const handleDownload = (media) => {
-    window.open(
-      import.meta.env.VITE_API_BASE_URL.replace("/api", "") + media.url,
-      "_blank",
-    );
+
+  const handleDownload = () => {
+    window.open(mediaUrl, "_blank");
   };
 
   return (
@@ -65,10 +62,9 @@ export default function MediaCard({
           >
             {isPreviewable ? (
               isImageFile(media.mime_type) ? (
-                <LazyImage
+                <img
                   onClick={() => handlePreview(media)}
                   src={thumbUrl}
-                  alt={media.filename}
                   className={styles.largeThumb}
                 />
               ) : (
@@ -112,7 +108,7 @@ export default function MediaCard({
 
           <div className={styles.cardActions}>
             <IconButton
-              onClick={() => handleDownload(media)}
+              onClick={() => handleDownload()}
               disabled={!canView}
               title="Download"
             >

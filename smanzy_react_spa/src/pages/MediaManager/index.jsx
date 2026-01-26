@@ -9,7 +9,7 @@ import IconButton from "@/components/IconButton";
 import Panel from "@/components/Panel";
 import UploadPanel from "@/components/UploadPanel";
 import { formatDateTime } from "@/utils/dateFormat";
-import { formatFileSize } from "@/utils/fileUtils";
+import { formatFileSize, getMediaUrl } from "@/utils/fileUtils";
 import styles from "./index.module.scss";
 import clsx from "clsx";
 import { FileIcon } from "@/components";
@@ -136,10 +136,7 @@ export default function MediaManager() {
   };
 
   const handleDownload = (media) => {
-    window.open(
-      import.meta.env.VITE_API_BASE_URL.replace("/api", "") + media.url,
-      "_blank",
-    );
+    window.open(getMediaUrl(media), "_blank");
   };
 
   if (isPending) {

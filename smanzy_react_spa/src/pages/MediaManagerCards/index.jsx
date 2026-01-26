@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/services/api";
 import Panel from "@/components/Panel";
@@ -10,256 +10,268 @@ import styles from "./index.module.scss";
 
 const CARD_BASE_WIDTH = 200; // Base card width in pixels
 const GAP_SIZE = 16; // Gap size in pixels (matches $spacing-4)
-const ROWS_TO_SHOW = 2; // Show up to 3 rows
+const ROWS_TO_SHOW = 2; // Number of rows to show
 const MAX_LIMIT = 8; // Maximum items per page
+const RESIZE_DEBOUNCE_MS = 50;
 
 export default function MediaManagerCards() {
-    const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const queryClient = useQueryClient();
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [limit, setLimit] = useState(MAX_LIMIT); // Default limit
-    const uploadPanelRef = useRef(null);
-    const containerRef = useRef(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const queryClient = useQueryClient();
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [limit, setLimit] = useState(MAX_LIMIT); // Default limit
+  const uploadPanelRef = useRef(null);
+  const containerRef = useRef(null);
+  const resizeTimerRef = useRef(null);
 
-    // Calculate columns based on viewport width
-    const calculateColumns = useCallback(() => {
-        if (!containerRef.current) return 4;
+  // Calculate columns based on container width
+  const calculateColumns = useCallback(() => {
+    const el = containerRef.current;
+    const containerWidth =
+      (el && el.getBoundingClientRect().width) || window.innerWidth || 0;
+    if (containerWidth === 0) return 1;
 
-        const containerWidth = containerRef.current.offsetWidth;
-        if (containerWidth === 0) return 4; // Fallback if not yet rendered
+    const cardWithGap = CARD_BASE_WIDTH + GAP_SIZE;
+    return Math.max(1, Math.floor(containerWidth / cardWithGap));
+  }, []);
 
-        const cardWithGap = CARD_BASE_WIDTH + GAP_SIZE;
-        const columns = Math.max(1, Math.floor(containerWidth / cardWithGap));
-        return columns;
-    }, []);
+  // Calculate and set an optimal limit (clamped to MAX_LIMIT)
+  const calculateOptimalLimit = useCallback(() => {
+    const columns = calculateColumns();
+    const newLimit = Math.min(MAX_LIMIT, Math.max(1, columns * ROWS_TO_SHOW));
+    setLimit((prev) => (prev === newLimit ? prev : newLimit));
+  }, [calculateColumns]);
 
-    // Calculate optimal limit based on viewport
-    const calculateOptimalLimit = useCallback(() => {
-        const columns = calculateColumns();
-        setLimit(columns * ROWS_TO_SHOW);
-    }, [calculateColumns]);
-
-    // Handle window resize and initial mount
-    useEffect(() => {
-        // Calculate after a small delay to ensure DOM is ready
-        const timer = setTimeout(() => {
-            calculateOptimalLimit();
-        }, 100);
-
-        const handleResize = () => {
-            calculateOptimalLimit();
-        };
-
-        window.addEventListener("resize", handleResize);
-        return () => {
-            clearTimeout(timer);
-            window.removeEventListener("resize", handleResize);
-        };
-    }, [calculateOptimalLimit]);
-
-    const page = parseInt(searchParams.get("page")) || 1;
-
-    // Fetch media list
-    const { isPending, error, data } = useQuery({
-        queryKey: ["media", page],
-        queryFn: () =>
-            api
-                .get(`/media?limit=${limit}&offset=${(page - 1) * limit}`)
-                .then((res) => {
-                    return res.data;
-                }),
-        keepPreviousData: true,
-        retry: false,
-    });
-
-    const handlePageChange = (newPage) => {
-        setSearchParams({ page: newPage });
-        window.scrollTo({ top: 0, behavior: "smooth" });
+  // Use ResizeObserver (with debounce) and window resize fallback to update limit
+  useEffect(() => {
+    const update = () => {
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => {
+        calculateOptimalLimit();
+        resizeTimerRef.current = null;
+      }, RESIZE_DEBOUNCE_MS);
     };
 
-    // Fetch current user for permissions
-    const { data: userData } = useQuery({
-        queryKey: ["profile"],
-        queryFn: () => api.get("/profile").then((res) => res.data),
-        retry: false,
-    });
-    const currentUser = userData?.data;
+    // Initial calculation
+    update();
 
-    const canView = () => {
-        return true;
-    };
-
-    const canManage = (media) => {
-        if (!currentUser) return false;
-        const isAdmin = currentUser.roles?.some((r) => r.name === "admin");
-        const isOwner = media.user_id === currentUser.id;
-        return isAdmin || isOwner;
-    };
-
-    // Upload mutation
-    const uploadMutation = useMutation({
-        mutationFn: async (file) => {
-            const formData = new FormData();
-            formData.append("file", file);
-
-            return api.post("/media", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-                onUploadProgress: (progressEvent) => {
-                    const percentCompleted = Math.round(
-                        (progressEvent.loaded * 100) / progressEvent.total,
-                    );
-                    setUploadProgress(percentCompleted);
-                },
-            });
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["media"] });
-            setSelectedFile(null);
-            setUploadProgress(0);
-            if (uploadPanelRef.current) {
-                uploadPanelRef.current.reset();
-            }
-        },
-        onError: (err) => {
-            alert(
-                "Failed to upload file: " + (err.response?.data?.error || err.message),
-            );
-            setUploadProgress(0);
-        },
-    });
-
-    // Delete mutation
-    const deleteMutation = useMutation({
-        mutationFn: (id) => {
-            return api.delete(`/media/${id}`);
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["media"] });
-        },
-        onError: (err) => {
-            alert(
-                "Failed to delete media: " + (err.response?.data?.error || err.message),
-            );
-        },
-    });
-
-    const handleFileSelect = (file) => {
-        if (file) {
-            setSelectedFile(file);
-        }
-    };
-
-    const handleUpload = () => {
-        if (selectedFile) {
-            uploadMutation.mutate(selectedFile);
-        }
-    };
-
-    const handleDownload = (media) => {
-        window.open(
-            import.meta.env.VITE_API_BASE_URL.replace("/api", "") + media.url,
-            "_blank",
-        );
-    };
-
-    if (isPending) {
-        return (
-            <div className={styles.loadingSpinner}>
-                <div className="text-center">
-                    <div className={styles.spinner}></div>
-                    <p className={styles.textSecondary}>Loading media...</p>
-                </div>
-            </div>
-        );
+    let ro;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      ro = new ResizeObserver(update);
+      ro.observe(containerRef.current);
     }
 
-    if (error) {
-        return (
-            <div className={styles.errorContainer}>
-                <div className={styles.errorBox}>
-                    <p className={styles.errorTitle}>Error loading media</p>
-                    <p className={styles.errorMessage}>{error.message}</p>
-                </div>
-            </div>
-        );
+    window.addEventListener("resize", update);
+    return () => {
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", update);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+    };
+  }, [calculateOptimalLimit]);
+
+  const page = parseInt(searchParams.get("page")) || 1;
+
+  // Fetch media list (include limit in the query key so we refetch when it changes)
+  const { isPending, error, data } = useQuery({
+    queryKey: ["media", page, limit],
+    queryFn: () =>
+      api
+        .get(`/media?limit=${limit}&offset=${(page - 1) * limit}`)
+        .then((res) => res.data),
+    keepPreviousData: true,
+    retry: false,
+  });
+
+  // Ensure the page is within the valid range when new data arrives
+  useEffect(() => {
+    if (!data) return;
+    const totalItems = data?.data?.total || 0;
+    const pages = Math.ceil(totalItems / (limit || 1));
+
+    if (pages === 0 && page !== 1) {
+      setSearchParams({ page: 1 });
+    } else if (pages > 0 && page > pages) {
+      setSearchParams({ page: pages });
     }
+  }, [data, limit, page, setSearchParams]);
 
-    const responseData = data?.data;
-    const mediaList = responseData?.files || [];
-    const totalItems = responseData?.total || 0;
-    const totalPages = Math.ceil(totalItems / limit);
+  const handlePageChange = (newPage) => {
+    setSearchParams({ page: newPage });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
+  // Fetch current user for permissions
+  const { data: userData } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.get("/profile").then((res) => res.data),
+    retry: false,
+  });
+  const currentUser = userData?.data;
+
+  const canView = () => {
+    return true;
+  };
+
+  const canManage = (media) => {
+    if (!currentUser) return false;
+    const isAdmin = currentUser.roles?.some((r) => r.name === "admin");
+    const isOwner = media.user_id === currentUser.id;
+    return isAdmin || isOwner;
+  };
+
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (file) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return api.post("/media", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setUploadProgress(percentCompleted);
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["media"] });
+      setSelectedFile(null);
+      setUploadProgress(0);
+      if (uploadPanelRef.current) {
+        uploadPanelRef.current.reset();
+      }
+    },
+    onError: (err) => {
+      alert(
+        "Failed to upload file: " + (err.response?.data?.error || err.message),
+      );
+      setUploadProgress(0);
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id) => {
+      return api.delete(`/media/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["media"] });
+    },
+    onError: (err) => {
+      alert(
+        "Failed to delete media: " + (err.response?.data?.error || err.message),
+      );
+    },
+  });
+
+  const handleFileSelect = (file) => {
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUpload = () => {
+    if (selectedFile) {
+      uploadMutation.mutate(selectedFile);
+    }
+  };
+
+  if (isPending) {
     return (
-        <div className={styles.container}>
-            {/* Header */}
-            <div className={styles.header}>
-                <h1 className={styles.title}>Media Manager with thumbnails</h1>
-                <p className={styles.subtitle}>
-                    Upload, manage, and organize your media files
-                </p>
-            </div>
-            {/* Upload Section */}
-            <UploadPanel
-                ref={uploadPanelRef}
-                title="Upload New File"
-                onFileSelect={handleFileSelect}
-                onUpload={handleUpload}
-                selectedFile={selectedFile}
-                isUploading={uploadMutation.isPending}
-                uploadProgress={uploadProgress}
-            />
-
-            {/* Media List */}
-            <Panel>
-                <div className={styles.tableHeader}>
-                    <div>
-                        <h2 className={styles.sectionTitle}>Your Media Files</h2>
-                        <p className={styles.tableInfo}>
-                            Showing {mediaList.length} of {totalItems} files
-                        </p>
-                    </div>
-                    {totalPages > 1 && (
-                        <div className={styles.textSecondary}>
-                            Page {page} of {totalPages}
-                        </div>
-                    )}
-                </div>
-
-                {mediaList.length === 0 ? (
-                    <div className={styles.emptyState}>
-                        <div className={styles.emptyIcon}>📁</div>
-                        <p className={styles.emptyText}>No media files found</p>
-                        <p className={styles.emptySubtext}>
-                            Upload a file or check other pages
-                        </p>
-                    </div>
-                ) : (
-                    <div ref={containerRef} className={styles.gridContainer}>
-                        {mediaList.map((media) => (
-                            <MediaCard
-                                key={media.id}
-                                media={media}
-                                onDelete={(m) => deleteMutation.mutate(m.id)}
-                                canManage={canManage(media)}
-                                canView={canView(media)}
-                            />
-                        ))}
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {mediaList.length > 0 && (
-                    <Pagination
-                        currentPage={page}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                    />
-                )}
-            </Panel>
+      <div className={styles.loadingSpinner}>
+        <div className="text-center">
+          <div className={styles.spinner}></div>
+          <p className={styles.textSecondary}>Loading media...</p>
         </div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <div className={styles.errorBox}>
+          <p className={styles.errorTitle}>Error loading media</p>
+          <p className={styles.errorMessage}>{error.message}</p>
+        </div>
+      </div>
+    );
+  }
+
+  const responseData = data?.data;
+  const mediaList = responseData?.files || [];
+  const totalItems = responseData?.total || 0;
+  const totalPages = Math.ceil(totalItems / (limit || 1));
+
+  return (
+    // attach the containerRef to the outer container so we can measure a stable element
+    <div className={styles.container} ref={containerRef}>
+      {/* Header */}
+      <div className={styles.header}>
+        <h1 className={styles.title}>Media Manager with thumbnails</h1>
+        <p className={styles.subtitle}>
+          Upload, manage, and organize your media files
+        </p>
+      </div>
+      {/* Upload Section */}
+      <UploadPanel
+        ref={uploadPanelRef}
+        title="Upload New File"
+        onFileSelect={handleFileSelect}
+        onUpload={handleUpload}
+        selectedFile={selectedFile}
+        isUploading={uploadMutation.isPending}
+        uploadProgress={uploadProgress}
+      />
+
+      {/* Media List */}
+      <Panel>
+        <div className={styles.tableHeader}>
+          <div>
+            <h2 className={styles.sectionTitle}>Your Media Files</h2>
+            <p className={styles.tableInfo}>
+              Showing {mediaList.length} of {totalItems} files
+            </p>
+          </div>
+          {totalPages > 1 && (
+            <div className={styles.textSecondary}>
+              Page {page} of {totalPages}
+            </div>
+          )}
+        </div>
+
+        {mediaList.length === 0 ? (
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>📁</div>
+            <p className={styles.emptyText}>No media files found</p>
+            <p className={styles.emptySubtext}>
+              Upload a file or check other pages
+            </p>
+          </div>
+        ) : (
+          <div className={styles.gridContainer}>
+            {mediaList.map((media) => (
+              <MediaCard
+                key={media.id}
+                media={media}
+                onDelete={(m) => deleteMutation.mutate(m.id)}
+                canManage={canManage(media)}
+                canView={canView(media)}
+              />
+            ))}
+          </div>
+        )}
+
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </Panel>
+    </div>
+  );
 }
