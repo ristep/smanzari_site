@@ -3,32 +3,16 @@ kind: Deployment
 metadata:
   name: thumbnailer-deployment
   namespace: smanzy
-  labels:
-    app: smanzy
-    component: thumbnailer
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: smanzy
-      component: thumbnailer
+      app: thumbnailer
   template:
     metadata:
       labels:
-        app: smanzy
-        component: thumbnailer
+        app: thumbnailer
     spec:
-      initContainers:
-      - name: wait-for-backend
-        image: busybox
-        command:
-        - sh
-        - -c
-        - |
-          until wget --spider -q http://backend-service:8080/health; do
-            echo "Waiting for backend..."
-            sleep 2
-          done
       containers:
       - name: thumbnailer
         image: smanzy-thumbnailer:latest
@@ -43,26 +27,6 @@ spec:
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
-        readinessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - test -d /app/uploads && touch /app/uploads/.healthcheck && rm /app/uploads/.healthcheck || exit 1
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
-        livenessProbe:
-          exec:
-            command:
-            - sh
-            - -c
-            - test -d /app/uploads && touch /app/uploads/.healthcheck && rm /app/uploads/.healthcheck || exit 1
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 3
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:

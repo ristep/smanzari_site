@@ -3,38 +3,28 @@ kind: Service
 metadata:
   name: postgres-service
   namespace: smanzy
-  labels:
-    app: smanzy
-    component: postgres
 spec:
+  type: LoadBalancer
   selector:
-    app: smanzy
-    component: postgres
+    app: postgres
   ports:
     - port: 5432
       targetPort: 5432
-      protocol: TCP
-  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres-deployment
   namespace: smanzy
-  labels:
-    app: smanzy
-    component: postgres
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: smanzy
-      component: postgres
+      app: postgres
   template:
     metadata:
       labels:
-        app: smanzy
-        component: postgres
+        app: postgres
     spec:
       containers:
       - name: postgres
@@ -60,26 +50,6 @@ spec:
         volumeMounts:
         - name: postgres-storage
           mountPath: /var/lib/postgresql/data
-        readinessProbe:
-          exec:
-            command:
-            - pg_isready
-            - -U
-            - smanzy_user
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 5
-        livenessProbe:
-          exec:
-            command:
-            - pg_isready
-            - -U
-            - smanzy_user
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
       volumes:
       - name: postgres-storage
         persistentVolumeClaim:

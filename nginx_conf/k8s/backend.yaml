@@ -3,56 +3,29 @@ kind: Service
 metadata:
   name: backend-service
   namespace: smanzy
-  labels:
-    app: smanzy
-    component: backend
 spec:
+  type: LoadBalancer
   selector:
-    app: smanzy
-    component: backend
+    app: backend
   ports:
     - port: 8080
       targetPort: 8080
-      protocol: TCP
-  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend-deployment
   namespace: smanzy
-  labels:
-    app: smanzy
-    component: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: smanzy
-      component: backend
+      app: backend
   template:
     metadata:
       labels:
-        app: smanzy
-        component: backend
+        app: backend
     spec:
-      initContainers:
-      - name: wait-for-postgres
-        image: postgres:16-alpine
-        command:
-        - sh
-        - -c
-        - |
-          until pg_isready -h postgres-service -p 5432 -U smanzy_user; do
-            echo "Waiting for PostgreSQL..."
-            sleep 2
-          done
-        env:
-        - name: PGPASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: smanzy-secrets
-              key: POSTGRES_PASSWORD
       containers:
       - name: backend
         image: smanzy-backend:latest
@@ -104,22 +77,6 @@ spec:
         volumeMounts:
         - name: uploads-storage
           mountPath: /app/uploads
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 3
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 30
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 3
       volumes:
       - name: uploads-storage
         persistentVolumeClaim:
