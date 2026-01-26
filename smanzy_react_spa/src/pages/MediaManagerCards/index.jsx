@@ -10,8 +10,9 @@ import styles from "./index.module.scss";
 
 const CARD_BASE_WIDTH = 200; // Base card width in pixels
 const GAP_SIZE = 16; // Gap size in pixels (matches $spacing-4)
-const ROWS_TO_SHOW = 2; // Show up to 3 rows
+const ROWS_TO_SHOW = 2; // Number of rows to show
 const MAX_LIMIT = 8; // Maximum items per page
+const RESIZE_DEBOUNCE_MS = 50;
 
 export default function MediaManagerCards() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,57 +22,78 @@ export default function MediaManagerCards() {
   const [limit, setLimit] = useState(MAX_LIMIT); // Default limit
   const uploadPanelRef = useRef(null);
   const containerRef = useRef(null);
+  const resizeTimerRef = useRef(null);
 
-  // Calculate columns based on viewport width
+  // Calculate columns based on container width
   const calculateColumns = useCallback(() => {
-    if (!containerRef.current) return 4;
-
-    const containerWidth = containerRef.current.offsetWidth;
-    if (containerWidth === 0) return 4; // Fallback if not yet rendered
+    const el = containerRef.current;
+    const containerWidth =
+      (el && el.getBoundingClientRect().width) || window.innerWidth || 0;
+    if (containerWidth === 0) return 1;
 
     const cardWithGap = CARD_BASE_WIDTH + GAP_SIZE;
-    const columns = Math.max(1, Math.floor(containerWidth / cardWithGap));
-    return columns;
+    return Math.max(1, Math.floor(containerWidth / cardWithGap));
   }, []);
 
-  // Calculate optimal limit based on viewport
+  // Calculate and set an optimal limit (clamped to MAX_LIMIT)
   const calculateOptimalLimit = useCallback(() => {
     const columns = calculateColumns();
-    setLimit(columns * ROWS_TO_SHOW);
+    const newLimit = Math.min(MAX_LIMIT, Math.max(1, columns * ROWS_TO_SHOW));
+    setLimit((prev) => (prev === newLimit ? prev : newLimit));
   }, [calculateColumns]);
 
-  // Handle window resize and initial mount
+  // Use ResizeObserver (with debounce) and window resize fallback to update limit
   useEffect(() => {
-    // Calculate after a small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
-      calculateOptimalLimit();
-    }, 100);
-
-    const handleResize = () => {
-      calculateOptimalLimit();
+    const update = () => {
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => {
+        calculateOptimalLimit();
+        resizeTimerRef.current = null;
+      }, RESIZE_DEBOUNCE_MS);
     };
 
-    window.addEventListener("resize", handleResize);
+    // Initial calculation
+    update();
+
+    let ro;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      ro = new ResizeObserver(update);
+      ro.observe(containerRef.current);
+    }
+
+    window.addEventListener("resize", update);
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", handleResize);
+      if (ro) ro.disconnect();
+      window.removeEventListener("resize", update);
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current);
     };
   }, [calculateOptimalLimit]);
 
   const page = parseInt(searchParams.get("page")) || 1;
 
-  // Fetch media list
+  // Fetch media list (include limit in the query key so we refetch when it changes)
   const { isPending, error, data } = useQuery({
-    queryKey: ["media", page],
+    queryKey: ["media", page, limit],
     queryFn: () =>
       api
         .get(`/media?limit=${limit}&offset=${(page - 1) * limit}`)
-        .then((res) => {
-          return res.data;
-        }),
+        .then((res) => res.data),
     keepPreviousData: true,
     retry: false,
   });
+
+  // Ensure the page is within the valid range when new data arrives
+  useEffect(() => {
+    if (!data) return;
+    const totalItems = data?.data?.total || 0;
+    const pages = Math.ceil(totalItems / (limit || 1));
+
+    if (pages === 0 && page !== 1) {
+      setSearchParams({ page: 1 });
+    } else if (pages > 0 && page > pages) {
+      setSearchParams({ page: pages });
+    }
+  }, [data, limit, page, setSearchParams]);
 
   const handlePageChange = (newPage) => {
     setSearchParams({ page: newPage });
@@ -183,10 +205,11 @@ export default function MediaManagerCards() {
   const responseData = data?.data;
   const mediaList = responseData?.files || [];
   const totalItems = responseData?.total || 0;
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalItems / (limit || 1));
 
   return (
-    <div className={styles.container}>
+    // attach the containerRef to the outer container so we can measure a stable element
+    <div className={styles.container} ref={containerRef}>
       {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>Media Manager with thumbnails</h1>
@@ -230,7 +253,7 @@ export default function MediaManagerCards() {
             </p>
           </div>
         ) : (
-          <div ref={containerRef} className={styles.gridContainer}>
+          <div className={styles.gridContainer}>
             {mediaList.map((media) => (
               <MediaCard
                 key={media.id}
@@ -243,14 +266,11 @@ export default function MediaManagerCards() {
           </div>
         )}
 
-        {/* Pagination */}
-        {mediaList.length > 0 && (
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        )}
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </Panel>
     </div>
   );
