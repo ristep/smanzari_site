@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smanzy-config
+  namespace: smanzy
+  labels:
+    app: smanzy
+    component: config
+data:
+  POSTGRES_USER: "smanzy_user"
+  POSTGRES_DB: "smanzy_db"
+  SERVER_PORT: "8080"
+  ENV: "development"
+  UPLOAD_DIR: "/app/uploads"
+  MEDIA_BASE_URL: "/api/media/files/"
+  GIN_MODE: "release"
+  FFMPEG_PATH: "/usr/bin/ffmpeg"
+  DB_DSN: "host=postgres-service user=smanzy_user password=smanzy_user dbname=smanzy_db port=5432 sslmode=disable"
+  UPLOAD_DIR_THUMBGEN: "/app/uploads"
