@@ -11,17 +11,16 @@ export const formatFileSize = (bytes) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
+//
+// const mediaSizes = {
+//   small:  "160x100",
+//   medium: "320x200",
+//   large:  "640x400",
+//   xl:     "800x600",
+//   xxl:    "1200x800"
+// }
 
-// 
-const mediaSizes = {
-  small:  "160x100",
-  medium: "320x200",
-  large:  "640x400",
-  xl:     "800x600",
-  xxl:    "1200x800"
-}
-
-export const getThumbnailUrl = (media, size = 'medium') => {
+export const getThumbnailUrl = (media, size = "medium") => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";
   const baseUrl = apiBaseUrl.replace("/api", "/api/media/files/");
   return baseUrl + media.stored_name;
