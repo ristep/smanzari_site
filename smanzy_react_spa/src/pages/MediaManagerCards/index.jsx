@@ -7,7 +7,7 @@ import MediaCard from "@/components/MediaCard";
 import UploadPanel from "@/components/UploadPanel";
 import Pagination from "@/components/Pagination";
 import styles from "./index.module.scss";
-import { waitForThumbnail } from "@/utils/fileUtils";
+import { getThumbnailUrl } from "@/utils/fileUtils";
 
 const CARD_BASE_WIDTH = 200; // Base card width in pixels
 const GAP_SIZE = 16; // Gap size in pixels (matches $spacing-4)
@@ -140,33 +140,17 @@ export default function MediaManagerCards() {
       });
     },
     onSuccess: async (res) => {
-      // Wait for thumbnail generation before refreshing. Backend returns the created media in res.data.data
+      // Backend returns the created media in res.data.data
+      // We're no longer waiting for thumbnail generation here — refresh immediately.
       const mediaObj = res?.data?.data || res?.data;
-      const storedName = mediaObj?.stored_name || mediaObj?.storedName;
       setIsProcessing(true);
-
-      try {
-        const found = await waitForThumbnail(storedName, "medium", {
-          intervalMs: 1000,
-          timeoutMs: 5000,
-        });
-        if (!found) {
-          console.warn(
-            "Thumbnail not generated within timeout for",
-            storedName,
-          );
-        }
-      } catch (err) {
-        console.error("Error while waiting for thumbnail:", err);
-      } finally {
-        queryClient.invalidateQueries({ queryKey: ["media"] });
-        setSelectedFile(null);
-        setUploadProgress(0);
-        if (uploadPanelRef.current) {
-          uploadPanelRef.current.reset();
-        }
-        setIsProcessing(false);
+      queryClient.invalidateQueries({ queryKey: ["media"] });
+      setSelectedFile(null);
+      setUploadProgress(0);
+      if (uploadPanelRef.current) {
+        uploadPanelRef.current.reset();
       }
+      setIsProcessing(false);
     },
     onError: (err) => {
       alert(

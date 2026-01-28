@@ -12,7 +12,6 @@ import { formatDateTime } from "@/utils/dateFormat";
 import {
   formatFileSize,
   getMediaUrl,
-  waitForThumbnail,
 } from "@/utils/fileUtils";
 import styles from "./index.module.scss";
 import clsx from "clsx";
@@ -86,30 +85,17 @@ export default function MediaManager() {
       });
     },
     onSuccess: async (res) => {
-      // Wait for thumbnail generation before refreshing the list.
-      // The backend returns the created media in res.data.data
+      // Backend returns the created media in res.data.data
+      // We're no longer waiting for thumbnail generation here — refresh immediately.
       const mediaObj = res?.data?.data || res?.data;
-      const storedName = mediaObj?.stored_name || mediaObj?.storedName;
       setIsProcessing(true);
-      try {
-        const found = await waitForThumbnail(storedName, "medium", {
-          intervalMs: 1000,
-          timeoutMs: 5000,
-        });
-        if (!found) {
-          console.warn("Thumbnail not found within timeout for", storedName);
-        }
-      } catch (err) {
-        console.error("Error while waiting for thumbnail:", err);
-      } finally {
-        queryClient.invalidateQueries({ queryKey: ["media"] });
-        setSelectedFile(null);
-        setUploadProgress(0);
-        if (uploadPanelRef.current) {
-          uploadPanelRef.current.reset();
-        }
-        setIsProcessing(false);
+      queryClient.invalidateQueries({ queryKey: ["media"] });
+      setSelectedFile(null);
+      setUploadProgress(0);
+      if (uploadPanelRef.current) {
+        uploadPanelRef.current.reset();
       }
+      setIsProcessing(false);
     },
     onError: (err) => {
       alert(

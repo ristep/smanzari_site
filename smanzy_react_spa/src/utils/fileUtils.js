@@ -44,43 +44,7 @@ export const getThumbnailUrl = (media, size = "medium") => {
   );
 };
 
-/**
- * Wait until the thumbnail for a given stored file name is available.
- * Polls the thumbnail endpoint using HEAD requests and resolves to true when found.
- *
- * @param {string} storedName - The stored file name (including extension)
- * @param {string} size - Thumb size key (small|medium|large)
- * @param {object} opts - { intervalMs, timeoutMs }
- * @returns {Promise<boolean>}
- */
-export const waitForThumbnail = async (
-  storedName,
-  size = "medium",
-  { intervalMs = 1000, timeoutMs = 20000 } = {},
-) => {
-  if (!storedName) return false;
-  const basePath = "/media/thumbs/";
-  const thumbName = storedName.replace(/\.[^/.]+$/, "") + ".jpg";
-  const path = `${basePath}${mediaSize(size)}/${thumbName}`;
-
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    try {
-      // Use HEAD request to check existence
-      await api.head(path);
-      return true;
-    } catch (err) {
-      // 404 means not ready yet; keep retrying
-      if (err.response && err.response.status === 404) {
-        await new Promise((r) => setTimeout(r, intervalMs));
-        continue;
-      }
-      // For other errors, rethrow so callers can handle it
-      throw err;
-    }
-  }
-  return false;
-};
+// Thumbnail polling helpers removed — using a different approach for thumbnail availability checks.
 
 export const getMediaUrl = (media) => {
   const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "";

@@ -24,7 +24,7 @@ export default function MediaCard({
   const isPreviewable =
     isImageFile(media.mime_type) || isVideoFile(media.mime_type);
   const thumbUrl = getThumbnailUrl(media);
-  console.log(thumbUrl);
+  // console.log(thumbUrl);
   const mediaUrl = getMediaUrl(media);
 
   const navigate = useNavigate();
