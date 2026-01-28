@@ -15,6 +15,7 @@ jobs:
         with:
           host: "conta.sman.cloud"
           username: "ristepan"
+          password: "Leprakon90877"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           debug: true
           script: |
