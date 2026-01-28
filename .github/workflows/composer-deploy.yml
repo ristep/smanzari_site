@@ -16,13 +16,10 @@ jobs:
           host: 158.220.121.142
           username: ristepan
           password: ${{ secrets.SERVER_PASSWORD }}
-          debug: false
-          script: |
-            echo "Testing SSH connection"
-
+          debug: true
           script: |
             set -e
             cd /home/ristepan/smanzari_site
             git pull origin main
             docker compose -f docker-compose.prod.yml up -d --build
-            # docker system prune -f # disabled for now
+            
