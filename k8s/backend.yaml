@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: ghcr.io/vozigo/smanzary-backend:latest
+        image: ghcr.io/vozigo/smanzary-backend:1.11.2
         imagePullPolicy: Always
         command: ["./server", "-migrate"]
         ports:
