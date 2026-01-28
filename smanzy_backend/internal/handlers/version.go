@@ -10,9 +10,9 @@ import (
 // Version constants
 const (
 	VersionMajor = 1
-	VersionMinor = 10
-	VersionPatch = 1
-	VersionPre   = "alfa"
+	VersionMinor = 11
+	VersionPatch = 2
+	VersionPre   = "FirstKubernetesRelease"
 )
 
 // Build information (can be set via ldflags during build)
