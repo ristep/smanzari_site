@@ -13,8 +13,8 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
+          host: "conta.sman.cloud"
+          username: "ristepan"
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           debug: true
           script: |
