@@ -15,7 +15,7 @@ const ROWS_TO_SHOW = 2; // Number of rows to show
 const MAX_LIMIT = 8; // Maximum items per page
 const RESIZE_DEBOUNCE_MS = 50;
 
-export default function MediaManagerCards() {
+export default function MediaCards() {
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [selectedFile, setSelectedFile] = useState(null);
@@ -121,44 +121,44 @@ export default function MediaManagerCards() {
     return isAdmin || isOwner;
   };
 
-  // Upload mutation
-  const uploadMutation = useMutation({
-    mutationFn: async (file) => {
-      const formData = new FormData();
-      formData.append("file", file);
+//   // Upload mutation
+//   const uploadMutation = useMutation({
+//     mutationFn: async (file) => {
+//       const formData = new FormData();
+//       formData.append("file", file);
 
-      return api.post("/media", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total,
-          );
-          setUploadProgress(percentCompleted);
-        },
-      });
-    },
-    onSuccess: async (res) => {
-      // Backend returns the created media in res.data.data
-      // We're no longer waiting for thumbnail generation here — refresh immediately.
-      const mediaObj = res?.data?.data || res?.data;
-      setIsProcessing(true);
-      queryClient.invalidateQueries({ queryKey: ["media"] });
-      setSelectedFile(null);
-      setUploadProgress(0);
-      if (uploadPanelRef.current) {
-        uploadPanelRef.current.reset();
-      }
-      setIsProcessing(false);
-    },
-    onError: (err) => {
-      alert(
-        "Failed to upload file: " + (err.response?.data?.error || err.message),
-      );
-      setUploadProgress(0);
-    },
-  });
+//       return api.post("/media", formData, {
+//         headers: {
+//           "Content-Type": "multipart/form-data",
+//         },
+//         onUploadProgress: (progressEvent) => {
+//           const percentCompleted = Math.round(
+//             (progressEvent.loaded * 100) / progressEvent.total,
+//           );
+//           setUploadProgress(percentCompleted);
+//         },
+//       });
+//     },
+//     onSuccess: async (res) => {
+//       // Backend returns the created media in res.data.data
+//       // We're no longer waiting for thumbnail generation here — refresh immediately.
+//       const mediaObj = res?.data?.data || res?.data;
+//       setIsProcessing(true);
+//       queryClient.invalidateQueries({ queryKey: ["media"] });
+//       setSelectedFile(null);
+//       setUploadProgress(0);
+//       if (uploadPanelRef.current) {
+//         uploadPanelRef.current.reset();
+//       }
+//       setIsProcessing(false);
+//     },
+//     onError: (err) => {
+//       alert(
+//         "Failed to upload file: " + (err.response?.data?.error || err.message),
+//       );
+//       setUploadProgress(0);
+//     },
+//   });
 
   // Delete mutation
   const deleteMutation = useMutation({
@@ -219,13 +219,13 @@ export default function MediaManagerCards() {
     <div className={styles.container} ref={containerRef}>
       {/* Header */}
       <div className={styles.header}>
-        <h1 className={styles.title}>Media Manager with thumbnails</h1>
+        <h1 className={styles.title}>Media Cards</h1>
         <p className={styles.subtitle}>
           Upload, manage, and organize your media files
         </p>
       </div>
       {/* Upload Section */}
-      <UploadPanel
+      {/* <UploadPanel
         ref={uploadPanelRef}
         title="Upload New File"
         onFileSelect={handleFileSelect}
@@ -234,7 +234,7 @@ export default function MediaManagerCards() {
         isUploading={uploadMutation.isPending}
         isProcessing={isProcessing}
         uploadProgress={uploadProgress}
-      />
+      /> */}
 
       {/* Media List */}
       <Panel>

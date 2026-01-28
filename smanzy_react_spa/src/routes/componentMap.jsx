@@ -1,7 +1,7 @@
 import MainLayout from '@/layout/MainLayout';
 import {
     Home, About, Login, Register, Profile, MediaManager,
-    UpdateMedia, NotFound, MediaManagerCards, AlbumList,
+    MediaUpload, UpdateMedia, NotFound, MediaCards, AlbumList,
     AlbumDetail, Videos, UserManagement, Settings
 } from '@/pages';
 
@@ -17,8 +17,9 @@ export const ComponentMap = {
     Register: <Register />,
     Profile: <Profile />,
     MediaManager: <MediaManager />,
+    MediaUpload: <MediaUpload />,
     UpdateMedia: <UpdateMedia />,
-    MediaManagerCards: <MediaManagerCards />,
+    MediaCards: <MediaCards />,
     AlbumList: <AlbumList />,
     AlbumDetail: <AlbumDetail />,
     UserManagement: <UserManagement />,

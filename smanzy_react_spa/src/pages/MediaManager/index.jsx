@@ -9,10 +9,7 @@ import IconButton from "@/components/IconButton";
 import Panel from "@/components/Panel";
 import UploadPanel from "@/components/UploadPanel";
 import { formatDateTime } from "@/utils/dateFormat";
-import {
-  formatFileSize,
-  getMediaUrl,
-} from "@/utils/fileUtils";
+import { formatFileSize, getMediaUrl } from "@/utils/fileUtils";
 import styles from "./index.module.scss";
 import clsx from "clsx";
 import { FileIcon } from "@/components";

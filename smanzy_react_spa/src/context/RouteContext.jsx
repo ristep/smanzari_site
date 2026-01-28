@@ -60,6 +60,13 @@ export const RouteProvider = ({ children }) => {
                     roles: ['user'],
                 },
                 {
+                    path: 'media/upload',
+                    component: 'MediaUpload',
+                    title: 'Upload Media',
+                    group: 'menu',
+                    roles: ['user'],
+                },
+                {
                     path: 'media/edit/:id',
                     component: 'UpdateMedia',
                     title: 'Update Media',
@@ -67,7 +74,7 @@ export const RouteProvider = ({ children }) => {
                 },
                 {
                     path: 'mediacards',
-                    component: 'MediaManagerCards',
+                    component: 'MediaCards',
                     title: 'Media Cards',
                     group: 'menu',
                     roles: ['user'],
