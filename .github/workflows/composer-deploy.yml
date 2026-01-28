@@ -17,12 +17,8 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Navigate to project directory and pull latest code
+            set -e
             cd /home/ristepan/smanzari_site
             git pull origin main
-            
-            # 2. Rebuild and restart containers
             docker compose -f docker-compose.prod.yml up -d --build
-            
-            # 3. Clean up unused Docker resources
             docker system prune -f
