@@ -50,3 +50,27 @@ jobs:
           context: ./smanzy_thumbgen
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.ORG_NAME }}/smanzary-thumbnailer:latest
+
+  # JOB 2: DEPLOY TO SERVER (The New Part)
+  # to be uncoment if you want to deploy to server
+  # deploy:
+  #   needs: build-and-push  # Wait for build to finish
+  #   runs-on: ubuntu-latest
+    
+  #   steps:
+  #     - name: Deploy via SSH
+  #       uses: appleboy/ssh-action@v0.1.10
+  #       with:
+  #         host: ${{ secrets.SERVER_HOST }}
+  #         username: ${{ secrets.SERVER_USER }}
+  #         key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #         script: |
+  #           # 1. Force Kubernetes to restart pods
+  #           # Since we are using ':latest', we just need a restart to pull the new image.
+            
+  #           kubectl rollout restart deployment/backend-deployment -n smanzy
+  #           kubectl rollout restart deployment/frontend-deployment -n smanzy
+  #           kubectl rollout restart deployment/thumbnailer-deployment -n smanzy
+            
+  #           # 2. Check status
+  #           kubectl get pods -n smanzy
