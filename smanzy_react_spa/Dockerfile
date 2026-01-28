@@ -3,6 +3,9 @@
 # ============================================
 FROM node:20-alpine AS builder
 
+# Dockerfile for Smanzy Frontend
+LABEL org.opencontainers.image.description "Smanzy Frontend"
+
 WORKDIR /app
 
 # Copy package files first (for better layer caching)

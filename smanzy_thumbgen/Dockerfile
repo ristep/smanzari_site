@@ -1,5 +1,9 @@
 # ... (Build stage remains the same) ...
 FROM golang:1.23-alpine AS builder
+
+# Dockerfile for Smanzy Thumbnailer
+LABEL org.opencontainers.image.description "Smanzy Thumbnailer"
+
 WORKDIR /app
 RUN apk add --no-cache git
 COPY go.mod go.sum ./

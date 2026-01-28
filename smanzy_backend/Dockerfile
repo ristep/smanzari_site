@@ -3,6 +3,9 @@
 # ============================================
 FROM golang:1.24-alpine AS builder
 
+# Dockerfile for Smanzy Backend
+LABEL org.opencontainers.image.description "Smanzy Backend"
+
 # Install git and ca-certificates (needed for fetching dependencies)
 RUN apk add --no-cache git ca-certificates
 
