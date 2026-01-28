@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: vozigo/smanzary_site
 
 jobs:
   build:
