@@ -34,22 +34,33 @@ echo "Incrementing $INCREMENT_TYPE version with build number: $BUILD_NUMBER"
 
 # Function to increment backend version
 increment_backend() {
-    local major=$(grep -o 'VersionMajor = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]*')
-    local minor=$(grep -o 'VersionMinor = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]*')
-    local patch=$(grep -o 'VersionPatch = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]*')
-    
+    local major=$(grep -o 'VersionMajor = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]\+')
+    local minor=$(grep -o 'VersionMinor = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]\+')
+    local patch=$(grep -o 'VersionPatch = [0-9]*' "$BACKEND_FILE" | grep -o '[0-9]\+')
     case $INCREMENT_TYPE in
         "major")
-            ((major++))
+            if [ "$major" == "0" ]; then
+                major=1
+            else
+                ((major++))
+            fi
             minor=0
             patch=0
             ;;
         "minor")
-            ((minor++))
+            if [ "$minor" == "0" ]; then
+                minor=1
+            else
+                ((minor++))
+            fi
             patch=0
             ;;
         "patch")
-            ((patch++))
+            if [ "$patch" == "0" ]; then
+                patch=1
+            else
+                ((patch++))
+            fi
             ;;
     esac
     
@@ -59,29 +70,41 @@ increment_backend() {
     sed -i "s/VersionPatch = [0-9]*/VersionPatch = $patch/" "$BACKEND_FILE"
     
     # Update pre-release with build number
-    sed -i "s/VersionPre   = \".*\"/VersionPre   = \"Build-$BUILD_NUMBER\"/" "$BACKEND_FILE"
+    sed -i "s/VersionPre   = \".*\"/VersionPre   = \"$BUILD_NUMBER\"/" "$BACKEND_FILE"
     
-    echo "Backend version updated to: $major.$minor.$patch-Build-$BUILD_NUMBER"
+    echo "Backend version updated to: $major.$minor.$patch.$BUILD_NUMBER" 
 }
 
 # Function to increment frontend version
 increment_frontend() {
-    local major=$(grep -o 'VERSION_MAJOR = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]*')
-    local minor=$(grep -o 'VERSION_MINOR = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]*')
-    local patch=$(grep -o 'VERSION_PATCH = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]*')
+    local major=$(grep -o 'VERSION_MAJOR = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]\+')
+    local minor=$(grep -o 'VERSION_MINOR = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]\+')
+    local patch=$(grep -o 'VERSION_PATCH = [0-9]*' "$FRONTEND_FILE" | grep -o '[0-9]\+')
     
     case $INCREMENT_TYPE in
         "major")
-            ((major++))
+            if [ "$major" == "0" ]; then
+                major=1
+            else
+                ((major++))
+            fi
             minor=0
             patch=0
             ;;
         "minor")
-            ((minor++))
+            if [ "$minor" == "0" ]; then
+                minor=1
+            else
+                ((minor++))
+            fi
             patch=0
             ;;
         "patch")
-            ((patch++))
+                if [ "$patch" == "0" ]; then
+                patch=1
+            else
+                ((patch++))
+            fi
             ;;
     esac
     
@@ -91,9 +114,9 @@ increment_frontend() {
     sed -i "s/VERSION_PATCH = [0-9]*/VERSION_PATCH = $patch/" "$FRONTEND_FILE"
     
     # Update pre-release with build number
-    sed -i "s/VERSION_PRE = \".*\"/VERSION_PRE = \"Build-$BUILD_NUMBER\"/" "$FRONTEND_FILE"
+    sed -i "s/VERSION_PRE = \".*\"/VERSION_PRE = \"$BUILD_NUMBER\"/" "$FRONTEND_FILE"
     
-    echo "Frontend version updated to: $major.$minor.$patch-Build-$BUILD_NUMBER"
+    echo "Frontend version updated to: $major.$minor.$patch - $BUILD_NUMBER"
 }
 
 # Execute increments

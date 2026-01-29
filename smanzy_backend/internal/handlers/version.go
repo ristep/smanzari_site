@@ -10,9 +10,9 @@ import (
 // Version constants
 const (
 	VersionMajor = 1
-	VersionMinor = 12
-	VersionPatch = 7
-	VersionPre   = "Build-202601291344"
+	VersionMinor = 0
+	VersionPatch = 5
+	VersionPre   = "202601291626"
 )
 
 // Build information (can be set via ldflags during build)
@@ -23,6 +23,8 @@ var (
 
 // VersionInfo represents the API version information
 type VersionInfo struct {
+	Ver       string `json:"ver"`
+	Build     string `json:"build"`
 	Version   string `json:"version"`
 	BuildTime string `json:"build_time"`
 	GitCommit string `json:"git_commit,omitempty"`
@@ -45,6 +47,8 @@ func NewVersionHandler() *VersionHandler {
 // @Router /api/version [get]
 func (h *VersionHandler) GetVersionHandler(c *gin.Context) {
 	version := VersionInfo{
+		Ver:       formatVersion(VersionMajor, VersionMinor, VersionPatch),
+		Build:     VersionPre,
 		Version:   formatVersion(VersionMajor, VersionMinor, VersionPatch) + " - " + VersionPre,
 		BuildTime: BuildTime,
 		GitCommit: GitCommit,

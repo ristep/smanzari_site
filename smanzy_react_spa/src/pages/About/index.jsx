@@ -36,12 +36,12 @@ export default function About() {
                 <strong>Frontend Version</strong>
                 <ul className={styles.list}>
                   <li>Version: {`${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}`}</li>
-                  <li>Build: {VERSION_PRE}</li>
+                  <li>Build:   {VERSION_PRE}</li>
                 </ul>
                 <strong>API Version</strong>
                 <ul className={styles.list}>
                   <li>Version: {versionInfo?.version}</li>
-                  <li>Build Time: {versionInfo?.build_time}</li>
+                  <li>Build:   {versionInfo?.build_time}</li>
                   {versionInfo?.git_commit && (
                     <li>Git Commit: {versionInfo.git_commit}</li>
                   )}
