@@ -11,8 +11,8 @@ import (
 const (
 	VersionMajor = 1
 	VersionMinor = 12
-	VersionPatch = 1
-	VersionPre   = "TestGitHubActions-02"
+	VersionPatch = 7
+	VersionPre   = "Build-202601291344"
 )
 
 // Build information (can be set via ldflags during build)

@@ -1,5 +1,3 @@
-import api from "@/services/api";
-
 /**
  * Formats file size in bytes into human readable format (KB, MB, GB, etc.)
  * @param {number} bytes
