@@ -65,3 +65,5 @@ id_rsa*
 *.backup
 
 smanzy_data/
+backups/
+DataBase.sql
