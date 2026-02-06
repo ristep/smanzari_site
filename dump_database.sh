@@ -4,7 +4,7 @@
 # Database Backup Script for Smanzy Site
 # ==============================================================================
 # This script creates a compressed PostgreSQL dump from the Docker container.
-# Backups are stored in the 'backupsdb' directory with a timestamp.
+# Backups are stored in the 'backups/db' directory with a timestamp.
 # ==============================================================================
 
 # Exit on error
@@ -12,7 +12,7 @@ set -e
 
 # Configuration
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKUP_DIR="$SCRIPT_DIR/backups"
+BACKUP_DIR="$SCRIPT_DIR/backups/db"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_FILE="$BACKUP_DIR/smanzy_db_$TIMESTAMP.sql.gz"
 ENV_FILE="$SCRIPT_DIR/.env"
