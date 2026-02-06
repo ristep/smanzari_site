@@ -67,7 +67,7 @@ echo "Database:  $DB_NAME"
 echo "Target:    $DB_BACKUP_FILE"   
 echo "Target:    $UPLOADS_DIR"
 
-rclone copy -P --max-depth 1 --drive-chunk-size 64M "$DB_BACKUP_DIR" gdrive:backups/smanzary_site/backups/
-rclone copy -P --max-depth 1 --drive-chunk-size 64M "$UPLOADS_DIR" gdrive:backups/smanzary_site/uploads/
+rclone copy --max-depth 1 --drive-chunk-size 64M "$DB_BACKUP_DIR" gdrive:backups/smanzary_site/backups/
+rclone copy --max-depth 1 --drive-chunk-size 64M "$UPLOADS_DIR" gdrive:backups/smanzary_site/uploads/
 
 echo "backup process finished ---> $TIMESTAMP"
