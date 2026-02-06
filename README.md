@@ -14,6 +14,7 @@ Smanzy is a comprehensive media management platform that allows users to upload,
 |-----------|-----------|
 | **Backend** | Go 1.24, Gin Framework, GORM |
 | **Frontend** | React 19, Vite, React Router |
+| **Thumbnailer** | Go, FFmpeg (Background Worker) |
 | **Database** | PostgreSQL 16 |
 | **Deployment** | Docker, Docker Compose, Nginx |
 | **CI/CD** | GitHub Actions |
@@ -29,29 +30,15 @@ smanzari_site/
 │   ├── deploy.yml          # Deployment workflow
 │   └── rollback.yml        # Rollback workflow
 ├── smanzy_backend/         # Go API backend
-│   ├── cmd/api/            # Main application entry
-│   ├── internal/           # Internal packages
-│   │   ├── auth/          # JWT authentication
-│   │   ├── handlers/      # HTTP handlers
-│   │   ├── middleware/    # Middleware
-│   │   └── models/        # Database models
-│   ├── Dockerfile         # Backend container
-│   └── go.mod             # Go dependencies
+│   └── ...
 ├── smanzy_react_spa/       # React frontend
-│   ├── src/               # Source code
-│   │   ├── components/   # Reusable components
-│   │   ├── pages/        # Page components
-│   │   ├── services/     # API services
-│   │   └── styles/       # Global styles
-│   ├── Dockerfile        # Frontend container
-│   └── package.json      # Node dependencies
+│   └── ...
+├── smanzy_thumbgen/        # Thumbnail generation service (Go)
 ├── nginx_conf/            # Nginx configurations
-│   └── smanzary.vozigo.com.conf
-├── scripts/               # Deployment scripts
-│   ├── deploy.sh         # Main deployment
-│   ├── rollback.sh       # Rollback script
-│   └── health-check.sh   # Health verification
+├── scripts/               # Deployment/Utility scripts
+├── docker-compose.yml     # Local orchestration
 ├── docker-compose.prod.yml # Production orchestration
+├── readme-compose.md      # Detailed Docker setup docs
 └── README.md             # This file
 ```
 
@@ -67,6 +54,7 @@ smanzari_site/
 
 ### Media Management
 - ✅ Upload photos and videos
+- ✅ Automatic thumbnail generation (Images & Videos)
 - ✅ View, edit, and delete media
 - ✅ Public and private media
 - ✅ Media metadata management
@@ -115,7 +103,6 @@ chmod +x scripts/*.sh
 4. **Access the application:**
 - **Frontend:** https://smanzary.vozigo.com
 - **API:** https://smanzary.vozigo.com/api
-- **pgAdmin:** SSH tunnel to localhost:5050
 
 ### Local Development
 
@@ -138,6 +125,7 @@ yarn dev
 
 ## 📚 Documentation
 
+- [**Docker Setup**](./readme-compose.md) - Detailed Docker Compose configuration
 - [**Deployment Guide**](./smanzy_agentic_deployment_docs/DEPLOYMENT.md) - Complete production deployment instructions
 - [**CI/CD Setup**](./smanzy_agentic_deployment_docs/CI_CD_SETUP.md) - GitHub Actions configuration
 - [**Backend README**](./smanzy_backend/README.md) - Backend API documentation
@@ -155,11 +143,14 @@ Nginx (TLS, Reverse Proxy)
 ├── Frontend Container (React + Nginx)
 │   └── Port: 3000 → 80
 │
-└── Backend Container (Go API)
-    └── Port: 8080
-        ↓
-    PostgreSQL Container
-        └── Port: 5432
+├── Backend Container (Go API)
+│   └── Port: 8080
+│       ↓
+│   PostgreSQL Container
+│       └── Port: 5432
+│
+└── Thumbnailer Container (Go + FFmpeg)
+    └── Watches: /app/uploads
 ```
 
 ---
